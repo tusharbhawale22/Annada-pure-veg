@@ -1,0 +1,224 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base Styles ─────────────────────────────────────────── */
+@layer base {
+  :root {
+    --saffron:  #E65100;
+    --gold:     #F9A825;
+    --cream:    #FFFDF5;
+    --ivory:    #FFF8F0;
+    --espresso: #2C1810;
+    --leaf:     #388E3C;
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--cream);
+    color: var(--espresso);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    line-height: 1.2;
+  }
+
+  ::selection {
+    background-color: rgba(230, 81, 0, 0.2);
+    color: var(--espresso);
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--ivory); }
+  ::-webkit-scrollbar-thumb {
+    background: var(--saffron);
+    border-radius: 3px;
+  }
+}
+
+/* ── Component Classes ────────────────────────────────────── */
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl
+           bg-saffron-900 text-white font-semibold text-sm
+           transition-all duration-200 hover:bg-saffron-800 active:scale-95
+           shadow-warm hover:shadow-warm-lg disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl
+           bg-gold-800 text-espresso font-semibold text-sm
+           transition-all duration-200 hover:bg-gold-700 active:scale-95
+           shadow-warm;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl
+           border-2 border-saffron-900 text-saffron-900 font-semibold text-sm
+           transition-all duration-200 hover:bg-saffron-900 hover:text-white active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg
+           text-espresso font-medium text-sm
+           transition-all duration-200 hover:bg-warm-200 active:scale-95;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-ivory rounded-2xl shadow-warm border border-warm-200
+           transition-all duration-300 hover:shadow-warm-lg;
+  }
+
+  .card-hover {
+    @apply card hover:-translate-y-1;
+  }
+
+  /* Inputs */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl border border-warm-300 bg-white
+           text-espresso placeholder-warm-400 text-sm font-medium
+           focus:outline-none focus:ring-2 focus:ring-saffron-900 focus:border-transparent
+           transition-all duration-200;
+  }
+
+  .input-label {
+    @apply block text-sm font-semibold text-espresso mb-1.5;
+  }
+
+  /* Section containers */
+  .section {
+    @apply py-16 md:py-24;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Section heading */
+  .section-title {
+    @apply font-display text-3xl md:text-4xl font-bold text-espresso;
+  }
+
+  .section-subtitle {
+    @apply text-warm-400 text-lg mt-3 font-medium;
+  }
+
+  /* Badge */
+  .badge-veg {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full
+           bg-leaf/10 text-leaf text-xs font-semibold border border-leaf/20;
+  }
+
+  .badge-special {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full
+           bg-gold-800 text-white text-xs font-bold;
+  }
+
+  /* Skeleton loader */
+  .skeleton {
+    @apply bg-warm-300 rounded-lg animate-pulse;
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, #FFF0E0 25%, #FFE4C4 50%, #FFF0E0 75%);
+    background-size: 200% 100%;
+    @apply animate-shimmer rounded-lg;
+  }
+
+  /* Rangoli divider */
+  .rangoli-divider {
+    @apply relative overflow-hidden;
+    background: linear-gradient(90deg, transparent 0%, rgba(230,81,0,0.08) 20%, rgba(249,168,37,0.12) 50%, rgba(230,81,0,0.08) 80%, transparent 100%);
+    height: 4px;
+    border-radius: 2px;
+  }
+
+  /* Thali card ring */
+  .thali-ring {
+    @apply ring-2 ring-transparent transition-all duration-300;
+  }
+  .thali-ring:hover {
+    @apply ring-gold-800 ring-offset-2 ring-offset-cream;
+  }
+
+  /* Admin sidebar item */
+  .admin-nav-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+           text-espresso/70 transition-all duration-200 hover:bg-saffron-50 hover:text-saffron-900;
+  }
+  .admin-nav-item.active {
+    @apply bg-saffron-900 text-white;
+  }
+}
+
+/* ── Spice Particle Animations ───────────────────────────── */
+.spice-particle {
+  position: absolute;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.spice-particle:nth-child(1)  { animation: floatUp 10s ease-in 0s infinite; }
+.spice-particle:nth-child(2)  { animation: floatUp 13s ease-in 1s infinite; }
+.spice-particle:nth-child(3)  { animation: floatUp  9s ease-in 2s infinite; }
+.spice-particle:nth-child(4)  { animation: floatUp 12s ease-in 0.5s infinite; }
+.spice-particle:nth-child(5)  { animation: floatUp 11s ease-in 3s infinite; }
+.spice-particle:nth-child(6)  { animation: floatUp 14s ease-in 1.5s infinite; }
+.spice-particle:nth-child(7)  { animation: floatUp  8s ease-in 4s infinite; }
+.spice-particle:nth-child(8)  { animation: floatUp 15s ease-in 2.5s infinite; }
+
+@keyframes floatUp {
+  0%   { transform: translateY(0) rotate(0deg) scale(1);   opacity: 0; }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.2; }
+  100% { transform: translateY(-100vh) rotate(720deg) scale(0.5); opacity: 0; }
+}
+
+/* ── Hero gradient overlay ───────────────────────────────── */
+.hero-overlay {
+  background: linear-gradient(
+    135deg,
+    rgba(230, 81, 0, 0.92) 0%,
+    rgba(230, 81, 0, 0.75) 40%,
+    rgba(44, 24, 16, 0.6) 100%
+  );
+}
+
+/* ── Cart drawer backdrop ────────────────────────────────── */
+.drawer-backdrop {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* ── Stepper styles ──────────────────────────────────────── */
+.stepper-line {
+  @apply absolute top-5 left-1/2 h-0.5 bg-warm-300 -z-10;
+  width: calc(100% - 2.5rem);
+  transform: translateX(-50%);
+}
+
+.stepper-line-fill {
+  @apply h-full bg-saffron-900 transition-all duration-500;
+}
+
+/* ── Admin stat card ─────────────────────────────────────── */
+.stat-card {
+  @apply bg-ivory rounded-2xl p-6 border border-warm-200 shadow-warm;
+}
+
+/* ── Toast custom styles ─────────────────────────────────── */
+.toast-success { background: var(--leaf) !important; }
+.toast-error   { background: #c0392b !important; }

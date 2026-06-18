@@ -1,0 +1,117 @@
+'use client';
+
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { authApi } from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
+import { useRouter, useSearchParams } from 'next/navigation';
+import toast from 'react-hot-toast';
+import Link from 'next/link';
+import { Eye, EyeOff, Leaf, ArrowRight } from 'lucide-react';
+
+const loginSchema = z.object({
+  email: z.string().email('Enter a valid email'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+type LoginForm = z.infer<typeof loginSchema>;
+
+export default function LoginPage() {
+  const router  = useRouter();
+  const params  = useSearchParams();
+  const redirect = params.get('redirect') || '/';
+  const { setUser } = useAuthStore();
+  const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginForm) => {
+    setLoading(true);
+    try {
+      const res = await authApi.login(data);
+      setUser(res.data.user);
+      toast.success(`Welcome back, ${res.data.user.name.split(' ')[0]}! 🌿`);
+      router.push(redirect);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-cream pt-20 flex items-center justify-center px-4">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-48 h-48 bg-saffron-900/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-64 h-64 bg-gold-800/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="w-full max-w-md relative">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-2 group">
+            <div className="w-12 h-12 bg-saffron-gradient rounded-2xl flex items-center justify-center shadow-warm group-hover:shadow-warm-lg transition-shadow">
+              <Leaf className="w-6 h-6 text-white" />
+            </div>
+          </Link>
+          <h1 className="font-display text-3xl font-bold text-espresso mt-4 mb-1">Welcome Back</h1>
+          <p className="text-espresso/60 text-sm">Login to your Annada Pure Veg account</p>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="card p-8 space-y-5">
+
+          {/* Email */}
+          <div>
+            <label className="input-label" htmlFor="email">Email Address</label>
+            <input id="email" type="email" autoComplete="email" className="input"
+              placeholder="you@example.com" {...register('email')} />
+            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="input-label" htmlFor="password">Password</label>
+            <div className="relative">
+              <input id="password" type={showPw ? 'text' : 'password'} autoComplete="current-password"
+                className="input pr-11" placeholder="••••••••" {...register('password')} />
+              <button type="button" onClick={() => setShowPw(!showPw)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-espresso/40 hover:text-espresso transition-colors">
+                {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+          </div>
+
+          {/* Submit */}
+          <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-3.5 text-base mt-2">
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Logging in...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">Login <ArrowRight className="w-4 h-4" /></span>
+            )}
+          </button>
+
+          <p className="text-center text-sm text-espresso/60">
+            Don't have an account?{' '}
+            <Link href={`/auth/register${redirect !== '/' ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}
+              className="font-semibold text-saffron-900 hover:underline">
+              Register here
+            </Link>
+          </p>
+        </form>
+
+        <p className="text-center text-xs text-espresso/40 mt-6">
+          🌿 100% Pure Vegetarian · Annada Pure Veg, Pune
+        </p>
+      </div>
+    </div>
+  );
+}
