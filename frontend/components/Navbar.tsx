@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { ShoppingCart, Menu, X, User, LogOut, ChevronDown, Leaf } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, ChevronDown, Leaf, Search } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 import { authApi } from '@/lib/api';
@@ -23,9 +23,11 @@ export default function Navbar() {
   const [scrolled,    setScrolled]    = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [cartBounce,  setCartBounce]  = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const totalItems = useCartStore((s) => s.getTotalItems());
   const toggleCart = useCartStore((s) => s.toggleCart);
+  const clearCart  = useCartStore((s) => s.clearCart);
   const { user, isAuthenticated, clearUser } = useAuthStore();
 
   // Scroll detection
@@ -47,6 +49,7 @@ export default function Navbar() {
     try {
       await authApi.logout();
     } finally {
+      clearCart(); // ← Clear cart on logout so next user doesn't see previous cart
       clearUser();
       setUserMenuOpen(false);
       toast.success('Logged out. See you tomorrow! 🌿');
@@ -54,16 +57,24 @@ export default function Navbar() {
     }
   };
 
-  // Don't show navbar on admin pages
-  if (pathname?.startsWith('/admin')) return null;
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/menu?search=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery('');
+    }
+  };
+
+  // Don't show navbar on admin or auth pages
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/auth')) return null;
 
   return (
     <header
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        scrolled
-          ? 'bg-cream/95 backdrop-blur-md shadow-warm border-b border-warm-200'
-          : 'bg-transparent'
+        scrolled || pathname !== '/'
+          ? 'bg-[#C84B00]/95 backdrop-blur-md shadow-warm border-b border-white/10'
+          : 'bg-transparent',
       )}
     >
       <div className="container-custom">
@@ -74,69 +85,89 @@ export default function Navbar() {
             <div className="w-9 h-9 bg-saffron-gradient rounded-xl flex items-center justify-center shadow-warm-sm group-hover:shadow-warm transition-shadow">
               <Leaf className="w-5 h-5 text-white" />
             </div>
-            <div className="leading-none">
-              <p className="font-display font-bold text-lg text-espresso group-hover:text-saffron-900 transition-colors">
+            <div className="leading-none text-white">
+              <p className="font-display font-bold text-lg group-hover:text-gold-300 transition-colors">
                 Annada
               </p>
-              <p className="text-xs text-saffron-900 font-semibold tracking-wide">PURE VEG</p>
+              <p className="text-xs font-semibold tracking-wide text-white/80">PURE VEG</p>
             </div>
           </Link>
 
           {/* ── Desktop Nav Links ───────────────────────────── */}
-          <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  'px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200',
-                  pathname === link.href
-                    ? 'bg-saffron-900 text-white shadow-warm-sm'
-                    : 'text-espresso hover:bg-warm-200 hover:text-saffron-900'
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="hidden md:flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-1.5">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "py-2 px-5 text-sm font-semibold rounded-full transition-all duration-300",
+                    isActive ? "bg-white text-[#C84B00] shadow-sm" : "text-white hover:bg-white/10"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
 
           {/* ── Right Actions ────────────────────────────────── */}
-          <div className="flex items-center gap-2">
-            {/* Cart Button */}
-            <button
-              onClick={toggleCart}
-              className={cn(
-                'relative flex items-center justify-center w-10 h-10 rounded-xl',
-                'text-espresso hover:bg-warm-200 transition-all duration-200',
-                cartBounce && 'animate-bounce-cart'
-              )}
-              aria-label="Open cart"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-saffron-900 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                  {totalItems > 9 ? '9+' : totalItems}
-                </span>
-              )}
-            </button>
-
-            {/* User Menu */}
-            {isAuthenticated && user ? (
-              <div className="relative hidden md:block">
+          <div className="flex items-center gap-3">
+            
+            {/* Search Bar */}
+            {pathname !== '/' && pathname !== '/tiffin' && (
+              <form onSubmit={handleSearch} className="hidden lg:flex items-center relative">
+                <input 
+                  type="text" 
+                  placeholder="Search dishes..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-white/30 transition-all w-48"
+                />
+                <Search className="w-4 h-4 text-white/70 absolute left-3" />
+              </form>
+            )}
+            <div className="flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-1 gap-1">
+              {/* Cart Button — only show when authenticated */}
+              {isAuthenticated && (
                 <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-warm-200 transition-all"
+                  onClick={toggleCart}
+                  className={cn(
+                    'relative flex items-center justify-center py-2 px-3 text-white hover:bg-white/10 rounded-full transition-colors',
+                    cartBounce && 'animate-bounce-cart'
+                  )}
+                  aria-label="Open cart"
                 >
-                  <div className="w-7 h-7 bg-saffron-gradient rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">
-                      {user.name.charAt(0).toUpperCase()}
+                  <ShoppingCart className="w-5 h-5" />
+                  {totalItems > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-[#C84B00] text-xs font-bold rounded-full flex items-center justify-center shadow-sm">
+                      {totalItems > 9 ? '9+' : totalItems}
                     </span>
-                  </div>
-                  <span className="text-sm font-semibold text-espresso max-w-[100px] truncate">
-                    {user.name.split(' ')[0]}
-                  </span>
-                  <ChevronDown className={cn('w-4 h-4 transition-transform', userMenuOpen && 'rotate-180')} />
+                  )}
                 </button>
+              )}
+
+              {/* User Menu */}
+              {isAuthenticated && user ? (
+                <div className="relative hidden md:block">
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-2 py-1.5 px-3 pl-2 text-white hover:bg-white/10 rounded-full transition-colors"
+                  >
+                    <div className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">
+                        {user.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-start leading-tight">
+                      <span className="text-sm font-semibold max-w-[100px] truncate">
+                        {user.name.split(' ')[0]}
+                      </span>
+                      <span className="text-[10px] text-white/70">Profile</span>
+                    </div>
+                    <ChevronDown className={cn('w-4 h-4 transition-transform text-white/70', userMenuOpen && 'rotate-180')} />
+                  </button>
 
                 {userMenuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-warm-lg border border-warm-200 py-2 animate-slide-in-up">
@@ -167,10 +198,19 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <Link href="/auth/login" className="hidden md:block btn-primary py-2 px-5 text-sm">
-                Login
-              </Link>
+              /* Login + Register buttons for unauthenticated users */
+              <div className="hidden md:flex items-center gap-2">
+                <Link href="/auth/login"
+                  className="py-2 px-5 text-sm text-white hover:bg-white/10 rounded-full transition-colors font-semibold">
+                  Login
+                </Link>
+                <Link href="/auth/register"
+                  className="bg-white text-[#C84B00] py-2 px-5 text-sm rounded-full font-semibold hover:opacity-90 transition-opacity">
+                  Register
+                </Link>
+              </div>
             )}
+            </div>
 
             {/* Mobile hamburger */}
             <button
@@ -190,12 +230,7 @@ export default function Navbar() {
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href}
                 onClick={() => setMenuOpen(false)}
-                className={cn(
-                  'px-4 py-3 rounded-xl text-sm font-semibold transition-all',
-                  pathname === link.href
-                    ? 'bg-saffron-900 text-white'
-                    : 'text-espresso hover:bg-warm-200'
-                )}>
+                className="btn-primary justify-center py-3">
                 {link.label}
               </Link>
             ))}
@@ -208,7 +243,10 @@ export default function Navbar() {
                 <button onClick={handleLogout} className="text-left px-4 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50">🚪 Logout</button>
               </>
             ) : (
-              <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="btn-primary justify-center">Login / Register</Link>
+              <div className="flex flex-col gap-2">
+                <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="btn-primary justify-center py-3">Login</Link>
+                <Link href="/auth/register" onClick={() => setMenuOpen(false)} className="btn-primary justify-center py-3">Register Free 🌿</Link>
+              </div>
             )}
           </div>
         </div>

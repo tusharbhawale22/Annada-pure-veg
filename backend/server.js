@@ -1,4 +1,4 @@
-/**
+/** 
  * server.js — Express application entry point
  * Annada Pure Veg Backend API
  */
@@ -25,6 +25,7 @@ const customerRoutes = require('./routes/customers');
 const settingsRoutes = require('./routes/settings');
 const tiffinRoutes   = require('./routes/tiffin');
 const uploadRoutes   = require('./routes/upload');
+const reviewsRoutes  = require('./routes/reviews');
 
 // ── Connect to MongoDB ─────────────────────────────────────
 connectDB();
@@ -78,6 +79,7 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/settings',  settingsRoutes);
 app.use('/api/tiffin',    tiffinRoutes);
 app.use('/api/upload',    uploadRoutes);
+app.use('/api/reviews',   reviewsRoutes);
 
 // ── 404 Handler ────────────────────────────────────────────
 app.use('*', (req, res) => {

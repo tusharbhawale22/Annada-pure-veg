@@ -101,6 +101,7 @@ const orderSchema = new mongoose.Schema({
 
   estimatedDeliveryTime: { type: Date },
   notes: { type: String, default: '' }, // Customer notes / special instructions
+  hasReviewed: { type: Boolean, default: false }, // Track if order is reviewed
 
 }, { timestamps: true });
 

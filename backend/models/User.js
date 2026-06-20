@@ -4,6 +4,7 @@
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 // ── Address sub-schema ─────────────────────────────────────
 const addressSchema = new mongoose.Schema({
@@ -61,6 +62,14 @@ const userSchema = new mongoose.Schema({
   lastLogin: {
     type: Date,
   },
+  passwordResetToken: {
+    type: String,
+    select: false,
+  },
+  passwordResetExpires: {
+    type: Date,
+    select: false,
+  },
 }, { timestamps: true });
 
 // ── Indexes ────────────────────────────────────────────────
@@ -77,6 +86,23 @@ userSchema.index({ role: 1 });
  */
 userSchema.methods.comparePassword = async function (password) {
   return bcrypt.compare(password, this.passwordHash);
+};
+
+/**
+ * Create password reset token and set its expiry time
+ * @returns {string}
+ */
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  return resetToken;
 };
 
 /**

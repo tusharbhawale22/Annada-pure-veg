@@ -21,7 +21,7 @@ interface MenuItem {
   sortOrder: number;
 }
 
-const CATEGORIES = ['Poha', 'Upma', 'Idli-Sambhar', 'Vada', 'Paratha', 'Chai & Drinks', 'Combos'];
+const CATEGORIES = ['Morning Booster', 'Healthy Tummy', 'Yummy Bites', 'Wrap', 'Pizza', 'Maggi', 'Tiffin', 'Others'];
 
 export default function AdminMenuPage() {
   const [categoryFilter, setCategoryFilter] = useState('All');
@@ -29,7 +29,7 @@ export default function AdminMenuPage() {
   const [deleting,  setDeleting]  = useState<string | null>(null);
   const [showForm,  setShowForm]  = useState(false);
   const [editItem,  setEditItem]  = useState<MenuItem | null>(null);
-  const [formData,  setFormData]  = useState({ name: '', description: '', price: '', category: 'Poha', preparationTime: '10', sortOrder: '1' });
+  const [formData,  setFormData]  = useState({ name: '', description: '', price: '', category: 'Morning Booster', preparationTime: '10', sortOrder: '1', isTodaySpecial: 'false' });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [saving,    setSaving]    = useState(false);
 
@@ -70,7 +70,15 @@ export default function AdminMenuPage() {
 
   const openEditForm = (item: MenuItem) => {
     setEditItem(item);
-    setFormData({ name: item.name, description: item.description, price: String(item.price), category: item.category, preparationTime: String(item.preparationTime), sortOrder: String(item.sortOrder) });
+    setFormData({
+      name: item.name,
+      description: item.description,
+      price: String(item.price),
+      category: item.category,
+      preparationTime: String(item.preparationTime),
+      sortOrder: String(item.sortOrder),
+      isTodaySpecial: String(item.isTodaySpecial),
+    });
     setShowForm(true);
   };
 
@@ -103,7 +111,7 @@ export default function AdminMenuPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl font-bold text-espresso">Menu Items</h1>
-        <button onClick={() => { setEditItem(null); setFormData({ name: '', description: '', price: '', category: 'Poha', preparationTime: '10', sortOrder: '1' }); setShowForm(true); }}
+        <button onClick={() => { setEditItem(null); setFormData({ name: '', description: '', price: '', category: 'Morning Booster', preparationTime: '10', sortOrder: '1', isTodaySpecial: 'false' }); setShowForm(true); }}
           className="btn-primary gap-2">
           <Plus className="w-4 h-4" /> Add Item
         </button>
@@ -206,6 +214,18 @@ export default function AdminMenuPage() {
                     <label className="input-label">Sort Order</label>
                     <input type="number" min="1" className="input" value={formData.sortOrder} onChange={(e) => setFormData({ ...formData, sortOrder: e.target.value })} />
                   </div>
+                </div>
+                <div className="flex items-center gap-2 py-1">
+                  <input
+                    type="checkbox"
+                    id="isTodaySpecial"
+                    className="w-4 h-4 rounded border-warm-300 text-saffron-900 focus:ring-saffron-900 cursor-pointer"
+                    checked={formData.isTodaySpecial === 'true'}
+                    onChange={(e) => setFormData({ ...formData, isTodaySpecial: e.target.checked ? 'true' : 'false' })}
+                  />
+                  <label htmlFor="isTodaySpecial" className="text-sm font-semibold text-espresso select-none cursor-pointer">
+                    Add to Special Dishes ⭐
+                  </label>
                 </div>
                 <div>
                   <label className="input-label">Image</label>

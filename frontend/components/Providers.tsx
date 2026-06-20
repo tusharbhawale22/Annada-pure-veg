@@ -5,9 +5,16 @@
 
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useCartStore } from '@/store/cartStore';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    // Manually rehydrate cart store from localStorage after mount
+    // This works alongside skipHydration: true to avoid SSR/client mismatch
+    useCartStore.persist.rehydrate();
+  }, []);
+
   const [queryClient] = useState(
     () =>
       new QueryClient({

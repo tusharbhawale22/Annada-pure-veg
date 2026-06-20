@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Minus, ShoppingCart, Star } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { formatCurrency } from '@/lib/utils';
@@ -24,9 +24,12 @@ interface MenuCardProps {
 
 export default function MenuCard({ item, layout = 'grid' }: MenuCardProps) {
   const [imgError, setImgError] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { items, addItem, updateQuantity, removeItem } = useCartStore();
 
-  const cartItem = items.find((i) => i._id === item._id);
+  useEffect(() => { setMounted(true); }, []);
+
+  const cartItem = mounted ? items.find((i) => i._id === item._id) : undefined;
   const quantity = cartItem?.quantity ?? 0;
 
   const handleAdd = () => {
@@ -106,98 +109,89 @@ export default function MenuCard({ item, layout = 'grid' }: MenuCardProps) {
     );
   }
 
-  // Grid layout — thali-style card
+  // Grid layout — UI Revamp
   return (
     <div className={cn(
-      'card-hover group overflow-hidden flex flex-col',
-      item.isTodaySpecial && 'ring-2 ring-gold-800 ring-offset-2 ring-offset-cream',
-      !item.isAvailable && 'opacity-60'
+      'group relative bg-white border-2 rounded-2xl p-4 flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
+      item.isAvailable ? 'border-[#E65100]/20 hover:border-[#E65100]' : 'border-gray-200 opacity-60'
     )}>
-      {/* Image — thali-style circular crop */}
-      <div className="relative p-4 pb-0">
-        <div className={cn(
-          'relative w-36 h-36 mx-auto rounded-full overflow-hidden bg-warm-200',
-          'thali-ring shadow-warm',
-          item.isAvailable && 'group-hover:ring-gold-800 group-hover:ring-offset-2 group-hover:ring-offset-ivory'
-        )}>
-          {!imgError && item.imageUrl ? (
-            <Image
-              src={item.imageUrl}
-              alt={item.name}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-110"
-              onError={() => setImgError(true)}
+      
+      {/* Pure Veg Badge */}
+      <div className="absolute top-3 left-3 bg-green-50 border border-green-200 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 z-10 shadow-sm">
+        <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span> Pure Veg
+      </div>
+
+      {/* Image */}
+      <div className="relative w-full aspect-[4/3] mb-4 rounded-xl overflow-hidden bg-warm-50/50 border border-warm-100 flex items-center justify-center">
+        {!imgError && item.imageUrl ? (
+          <Image
+            src={item.imageUrl}
+            alt={item.name}
+            fill
+            unoptimized={item.imageUrl.includes('.gif')}
+            className="object-contain p-2 transition-transform duration-500 group-hover:scale-110"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div className="relative w-20 h-20 opacity-80 animate-float-slow">
+            <Image 
+              src="https://media.giphy.com/media/VekyF6K0pXm3fIT6aW/giphy.gif" 
+              alt="Delicious food" 
+              fill 
+              unoptimized
+              className="object-contain" 
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-warm-200 to-warm-300">
-              🍽️
-            </div>
-          )}
-
-          {/* Sold out overlay */}
-          {!item.isAvailable && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <span className="text-white text-xs font-bold tracking-wide">SOLD OUT</span>
-            </div>
-          )}
-        </div>
-
-        {/* Badges */}
-        <div className="absolute top-4 left-4 flex flex-col gap-1">
-          <span className="badge-veg">🌿 Pure Veg</span>
-          {item.isTodaySpecial && (
-            <span className="badge-special">
-              <Star className="w-3 h-3 fill-current" /> Today's Special
-            </span>
-          )}
-        </div>
+          </div>
+        )}
+        
+        {/* Sold out overlay */}
+        {!item.isAvailable && (
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] flex items-center justify-center">
+            <span className="text-red-600 font-bold tracking-widest uppercase text-sm border-2 border-red-600 px-3 py-1 rounded-md rotate-[-10deg]">SOLD OUT</span>
+          </div>
+        )}
       </div>
 
       {/* Content */}
-      <div className="flex flex-col flex-1 p-4 pt-3">
-        <h3 className="font-display font-semibold text-espresso text-base text-center mb-1 line-clamp-1">
+      <div className="flex flex-col flex-1">
+        <h3 className="font-display font-bold text-espresso text-base text-center mb-1 line-clamp-1">
           {item.name}
         </h3>
-        <p className="text-xs text-espresso/60 text-center line-clamp-2 mb-3 flex-1">
-          {item.description}
-        </p>
+        
+        {/* We hide description in this new card style to keep it clean like the mockup, or make it very small */}
+        <div className="flex-1" />
 
         {/* Price + Add button */}
-        <div className="flex items-center justify-between mt-auto">
-          <p className="font-display font-bold text-saffron-900 text-lg">
+        <div className="flex items-center justify-between mt-4">
+          <p className="font-display font-bold text-[#C84B00] text-lg">
             {formatCurrency(item.price)}
           </p>
 
-          {item.isAvailable ? (
+          {item.isAvailable && (
             quantity === 0 ? (
               <button
                 onClick={handleAdd}
-                className="flex items-center gap-1.5 px-3 py-2 bg-saffron-900 text-white text-sm font-bold rounded-xl hover:bg-saffron-800 active:scale-95 transition-all shadow-warm-sm hover:shadow-warm"
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#E65100] text-white text-sm font-bold rounded-xl hover:bg-[#C84B00] active:scale-95 transition-all shadow-md hover:shadow-lg"
               >
-                <ShoppingCart className="w-4 h-4" />
-                Add
+                <ShoppingCart className="w-4 h-4" /> Add
               </button>
             ) : (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 border-2 border-[#E65100] rounded-xl p-0.5 bg-white">
                 <button
                   onClick={handleDecrement}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-warm-200 hover:bg-warm-300 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-warm-100 transition-colors text-[#E65100]"
                 >
-                  <Minus className="w-3.5 h-3.5 text-espresso" />
+                  <Minus className="w-4 h-4" />
                 </button>
-                <span className="font-bold text-espresso w-5 text-center">{quantity}</span>
+                <span className="font-bold text-[#E65100] w-6 text-center">{quantity}</span>
                 <button
                   onClick={handleIncrement}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-saffron-900 text-white hover:bg-saffron-800 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#E65100] text-white transition-colors shadow-sm"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-4 h-4" />
                 </button>
               </div>
             )
-          ) : (
-            <span className="text-xs font-semibold text-red-500 bg-red-50 px-2 py-1 rounded-lg">
-              Sold Out
-            </span>
           )}
         </div>
       </div>

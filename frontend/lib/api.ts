@@ -53,13 +53,15 @@ export const menuApi = {
 
 // Auth
 export const authApi = {
-  register: (data: Record<string, string>) => api.post('/auth/register', data),
+  register: (data: Record<string, unknown>) => api.post('/auth/register', data),
   login: (data: Record<string, string>) => api.post('/auth/login', data),
   logout: () => api.post('/auth/logout'),
   me: () => api.get('/auth/me'),
-  updateProfile: (data: Record<string, string>) => api.put('/auth/profile', data),
-  changePassword: (data: Record<string, string>) => api.put('/auth/change-password', data),
-  addAddress: (data: Record<string, string>) => api.post('/auth/address', data),
+  updateProfile: (data: any) => api.put('/auth/profile', data),
+  changePassword: (data: any) => api.put('/auth/change-password', data),
+  forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token: string, data: Record<string, string>) => api.post(`/auth/reset-password/${token}`, data),
+  addAddress: (data: any) => api.post('/auth/address', data),
   deleteAddress: (id: string) => api.delete(`/auth/address/${id}`),
 };
 
@@ -119,4 +121,10 @@ export const tiffinApi = {
   pause: (id: string, data?: unknown) => api.patch(`/tiffin/${id}/pause`, data),
   resume: (id: string) => api.patch(`/tiffin/${id}/resume`),
   cancel: (id: string) => api.patch(`/tiffin/${id}/cancel`),
+};
+
+// Reviews
+export const reviewsApi = {
+  addReview: (data: { orderId: string; rating: number; comment: string }) => api.post('/reviews', data),
+  getReviews: () => api.get('/reviews'),
 };

@@ -81,6 +81,7 @@ export const useCartStore = create<CartStore>()(
     {
       name: 'annada-cart', // localStorage key
       partialize: (state) => ({ items: state.items }), // Only persist items, not isOpen
+      skipHydration: true, // Prevent SSR/client hydration mismatch
     }
   )
 );

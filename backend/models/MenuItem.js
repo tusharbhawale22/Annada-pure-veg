@@ -6,13 +6,12 @@
 const mongoose = require('mongoose');
 
 const CATEGORIES = [
-  'Poha',
-  'Upma',
-  'Idli-Sambhar',
-  'Vada',
-  'Paratha',
-  'Chai & Drinks',
-  'Combos',
+  'Morning Booster',
+  'Healthy Tummy',
+  'Yummy Bites',
+  'Wrap',
+  'Pizza',
+  'Maggi',
   'Tiffin',
   'Others',
 ];

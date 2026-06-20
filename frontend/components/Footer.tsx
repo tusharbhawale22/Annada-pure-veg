@@ -1,8 +1,15 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Leaf, Phone, MapPin, Clock, Instagram, Facebook } from 'lucide-react';
 
 export default function Footer() {
+  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
+
+  // Hide footer on admin pages
+  if (pathname?.startsWith('/admin')) return null;
 
   const quickLinks = [
     { href: '/',        label: 'Home'        },
@@ -12,6 +19,7 @@ export default function Footer() {
   ];
 
   const categories = ['Poha', 'Upma', 'Idli-Sambhar', 'Vada', 'Paratha', 'Chai & Drinks', 'Combos'];
+
 
   return (
     <footer className="bg-espresso text-warm-200">

@@ -6,13 +6,14 @@ import { Search, LayoutGrid, List, SlidersHorizontal, X } from 'lucide-react';
 import { menuApi } from '@/lib/api';
 import MenuCard from '@/components/MenuCard';
 import { SkeletonList } from '@/components/SkeletonCard';
-import { debounce } from '@/lib/utils';
+import { debounce, cn } from '@/lib/utils';
+import MenuSidebar from '@/components/MenuSidebar';
 
-const CATEGORIES = ['All', 'Poha', 'Upma', 'Idli-Sambhar', 'Vada', 'Paratha', 'Chai & Drinks', 'Combos'];
+const CATEGORIES = ['All', 'Morning Booster', 'Healthy Tummy', 'Yummy Bites', 'Wrap', 'Pizza', 'Maggi'];
 
 const CATEGORY_EMOJIS: Record<string, string> = {
-  All: '🍽️', Poha: '🍚', Upma: '🫕', 'Idli-Sambhar': '🫓', Vada: '🧆',
-  Paratha: '🫔', 'Chai & Drinks': '☕', Combos: '🎁',
+  All: '🍽️', 'Morning Booster': '🌅', 'Healthy Tummy': '🥗', 'Yummy Bites': '🥪', Wrap: '🌯',
+  Pizza: '🍕', Maggi: '🍜',
 };
 
 export default function MenuPage() {
@@ -52,62 +53,65 @@ export default function MenuPage() {
   const nonSpecials = items.filter((i: { isTodaySpecial: boolean }) => !i.isTodaySpecial);
 
   return (
-    <div className="min-h-screen bg-cream pt-20">
-      {/* ── Page Header ───────────────────────────────── */}
-      <div className="bg-gradient-to-br from-saffron-900 to-[#C84B00] py-14 px-4">
-        <div className="container-custom text-center text-white">
-          <p className="text-gold-300 font-semibold text-sm uppercase tracking-widest mb-2">100% Pure Vegetarian</p>
-          <h1 className="font-display text-4xl md:text-5xl font-bold mb-3">Our Menu 🍽️</h1>
-          <p className="text-white/70 text-lg">Fresh, homestyle cooking — made every morning</p>
-        </div>
-      </div>
+    <div className="lg:grid lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px] min-h-screen bg-[#FFFDFB] pt-16 md:pt-20">
+      
+      {/* ── Left Area: Main Content ── */}
+      <div className="flex flex-col pb-20 lg:pb-0">
 
-      <div className="container-custom py-8">
-        {/* ── Search & Filters ─────────────────────────── */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          {/* Search */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-espresso/40" />
-            <input
-              type="text"
-              placeholder="Search for Poha, Idli, Chai..."
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="input pl-10 pr-10"
-            />
-            {search && (
-              <button onClick={() => { setSearch(''); setDebouncedSearch(''); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-espresso/40 hover:text-espresso">
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-          {/* Layout toggle */}
-          <div className="flex items-center gap-1 bg-warm-200 rounded-xl p-1 h-11">
-            <button onClick={() => setLayout('grid')}
-              className={`p-2 rounded-lg transition-all ${layout === 'grid' ? 'bg-white shadow-warm-sm' : 'text-espresso/50 hover:text-espresso'}`}>
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button onClick={() => setLayout('list')}
-              className={`p-2 rounded-lg transition-all ${layout === 'list' ? 'bg-white shadow-warm-sm' : 'text-espresso/50 hover:text-espresso'}`}>
-              <List className="w-4 h-4" />
-            </button>
+        {/* ── Header Banner ── */}
+        <div className="bg-gradient-to-b from-[#3D1000] to-[#6B2200] py-14 px-4 relative overflow-hidden flex-shrink-0">
+          <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+          <div className="max-w-2xl mx-auto text-center text-white relative z-10">
+            <p className="text-[#FFD700] font-bold text-xs uppercase tracking-[0.3em] mb-3">PURE VEGETARIAN</p>
+            <h1 className="font-display text-5xl md:text-6xl font-bold mb-4 flex items-center justify-center gap-3">
+              <span className="text-4xl">🍽️</span> Our Menu
+            </h1>
+            <p className="text-white/75 text-base md:text-lg leading-relaxed">
+              Fresh, homestyle cooking — made every morning with love and care.
+            </p>
           </div>
         </div>
 
-        {/* Category tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-8 scrollbar-hide">
-          {CATEGORIES.map((cat) => (
-            <button key={cat} onClick={() => setCategory(cat)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all flex-shrink-0
-                ${category === cat
-                  ? 'bg-saffron-900 text-white shadow-warm-sm'
-                  : 'bg-ivory text-espresso hover:bg-warm-200 border border-warm-200'}`}>
-              <span>{CATEGORY_EMOJIS[cat]}</span>
-              {cat}
-            </button>
-          ))}
+        {/* ── Category Pills (below banner) ── */}
+        <div className="bg-[#FFFDFB] px-4 md:px-8 pt-5 pb-2 border-b border-warm-100 shadow-sm">
+          <div className="flex gap-2.5 overflow-x-auto scrollbar-hide">
+            {CATEGORIES.map((cat) => {
+              const isActive = category === cat;
+              return (
+                <button key={cat} onClick={() => setCategory(cat)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all flex-shrink-0 border",
+                    isActive
+                      ? "bg-[#E65100] text-white border-[#E65100] shadow-md"
+                      : "bg-white text-espresso border-warm-200 hover:border-[#E65100]/40 hover:text-[#E65100]"
+                  )}>
+                  <span className="text-base leading-none">{CATEGORY_EMOJIS[cat]}</span>
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        <div className="p-4 md:px-8 pt-6">
+        {/* ── Search (Mobile Only) ── */}
+        <div className="lg:hidden relative mb-6">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-espresso/40" />
+          <input
+            type="text"
+            placeholder="Search dishes..."
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="w-full bg-white border border-warm-200 text-espresso rounded-full py-3 pl-11 pr-10 text-sm shadow-sm"
+          />
+          {search && (
+            <button onClick={() => { setSearch(''); setDebouncedSearch(''); }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-espresso/40 hover:text-espresso">
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
 
         {isLoading && <SkeletonList count={8} />}
 
@@ -121,26 +125,6 @@ export default function MenuPage() {
 
         {!isLoading && !isError && (
           <>
-            {/* Today's Specials */}
-            {specials.length > 0 && category === 'All' && !debouncedSearch && (
-              <div className="mb-10">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="rangoli-divider flex-1" />
-                  <h2 className="font-display font-bold text-xl text-espresso flex items-center gap-2">
-                    ⭐ Today's Specials
-                  </h2>
-                  <div className="rangoli-divider flex-1" />
-                </div>
-                <div className={layout === 'grid'
-                  ? 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4'
-                  : 'flex flex-col gap-3'}>
-                  {specials.map((item: Parameters<typeof MenuCard>[0]['item']) => (
-                    <MenuCard key={item._id} item={item} layout={layout} />
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* All items */}
             {items.length === 0 ? (
               <div className="text-center py-16">
@@ -151,25 +135,49 @@ export default function MenuPage() {
             ) : (
               <>
                 {(category !== 'All' || debouncedSearch) && (
-                  <p className="text-sm text-espresso/60 mb-4 font-medium">
+                  <p className="text-sm text-espresso/60 mb-4 font-medium px-2">
                     Showing {items.length} item{items.length !== 1 ? 's' : ''}
                     {category !== 'All' ? ` in "${category}"` : ''}
                   </p>
                 )}
-                <div className={layout === 'grid'
-                  ? 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4'
-                  : 'flex flex-col gap-3'}>
-                  {(category === 'All' && !debouncedSearch ? nonSpecials : items).map(
-                    (item: Parameters<typeof MenuCard>[0]['item']) => (
-                      <MenuCard key={item._id} item={item} layout={layout} />
-                    )
-                  )}
-                </div>
+                
+                {/* Menu Layout */}
+                {category === 'All' && !debouncedSearch ? (
+                  <div className="flex flex-col gap-12 pb-10">
+                    {CATEGORIES.filter(c => c !== 'All').map(cat => {
+                      const catItems = items.filter((i: any) => i.category === cat);
+                      if (catItems.length === 0) return null;
+                      
+                      return (
+                        <div key={cat} className="flex flex-col">
+                          <h2 className="text-2xl font-display font-bold text-espresso mb-6 flex items-center gap-2 px-2 border-b-2 border-warm-100 pb-2">
+                            <span>{CATEGORY_EMOJIS[cat]}</span> {cat}
+                          </h2>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 px-1">
+                            {catItems.map((item: any) => (
+                              <MenuCard key={item._id} item={item} layout="grid" />
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5 px-2">
+                    {items.map((item: Parameters<typeof MenuCard>[0]['item']) => (
+                      <MenuCard key={item._id} item={item} layout="grid" />
+                    ))}
+                  </div>
+                )}
               </>
             )}
           </>
         )}
+        </div>
       </div>
+
+      {/* ── Right Area: Sidebar (Desktop Only) ── */}
+      <MenuSidebar specials={specials} />
     </div>
   );
 }

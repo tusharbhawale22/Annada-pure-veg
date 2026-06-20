@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { X, Minus, Plus, ShoppingBag, ArrowRight, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,6 +9,12 @@ import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 export default function CartDrawer() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const {
     items, isOpen, closeCart,
     updateQuantity, removeItem, clearCart,
@@ -16,6 +23,8 @@ export default function CartDrawer() {
 
   const totalItems = getTotalItems();
   const totalPrice = getTotalPrice();
+
+  if (!mounted) return null;
 
   return (
     <>

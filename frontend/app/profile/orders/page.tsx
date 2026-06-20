@@ -1,20 +1,55 @@
 'use client';
 
-import { useQuery } from 'react-query';
-import { orderApi } from '@/lib/api';
+import { useQuery, useQueryClient } from 'react-query';
+import { useState } from 'react';
+import { orderApi, reviewsApi } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { formatCurrency, formatDateTime, ORDER_STATUS_CONFIG } from '@/lib/utils';
 import Link from 'next/link';
-import { Package } from 'lucide-react';
+import { Package, Star, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function MyOrdersPage() {
   const { isAuthenticated } = useAuthStore();
+  const queryClient = useQueryClient();
+
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState('');
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data, isLoading } = useQuery(
     'my-orders',
     () => orderApi.myOrders().then((r) => r.data.orders),
     { enabled: isAuthenticated }
   );
+
+  const openReviewModal = (e: React.MouseEvent, orderId: string) => {
+    e.preventDefault(); // Prevent navigating to order details
+    setSelectedOrderId(orderId);
+    setRating(5);
+    setComment('');
+    setReviewModalOpen(true);
+  };
+
+  const submitReview = async () => {
+    if (!comment.trim()) {
+      toast.error('Please write a short review.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await reviewsApi.addReview({ orderId: selectedOrderId, rating, comment });
+      toast.success('Thank you for your feedback! 🌟');
+      setReviewModalOpen(false);
+      queryClient.invalidateQueries('my-orders');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to submit review');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -62,6 +97,7 @@ export default function MyOrdersPage() {
               _id: string;
               orderNumber: string;
               orderStatus: string;
+              hasReviewed?: boolean;
               createdAt: string;
               totalAmount: number;
               paymentMethod: string;
@@ -83,15 +119,74 @@ export default function MyOrdersPage() {
                       {order.items.map((i) => `${i.name} ×${i.quantity}`).join(', ')}
                     </p>
                   </div>
-                  <div className="text-right flex-shrink-0">
+                  <div className="text-right flex-shrink-0 flex flex-col items-end">
                     <p className="font-display font-bold text-saffron-900">{formatCurrency(order.totalAmount)}</p>
-                    <p className="text-xs text-espresso/50 uppercase">{order.paymentMethod}</p>
+                    <p className="text-xs text-espresso/50 uppercase mb-2">{order.paymentMethod}</p>
+                    
+                    {order.orderStatus === 'delivered' && !order.hasReviewed && (
+                      <button
+                        onClick={(e) => openReviewModal(e, order._id)}
+                        className="text-xs bg-saffron-900 text-white px-3 py-1.5 rounded-lg hover:bg-saffron-800 transition-colors shadow-sm font-semibold"
+                      >
+                        Rate Order 🌟
+                      </button>
+                    )}
+                    {order.orderStatus === 'delivered' && order.hasReviewed && (
+                      <span className="text-xs text-green-600 font-semibold bg-green-50 px-2 py-1 rounded-md">Reviewed ✓</span>
+                    )}
                   </div>
                 </Link>
               );
             })}
           </div>
         )}
+
+        {/* ── Review Modal ── */}
+        {reviewModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-espresso/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-2xl shadow-warm-xl w-full max-w-md overflow-hidden animate-slide-in-up">
+              <div className="p-4 border-b border-warm-200 flex items-center justify-between bg-cream">
+                <h3 className="font-display font-bold text-lg text-espresso">Rate Your Order</h3>
+                <button onClick={() => setReviewModalOpen(false)} className="text-espresso/50 hover:text-espresso transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-5">
+                <div>
+                  <p className="text-sm font-semibold text-espresso mb-2">How was the food?</p>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => setRating(star)}
+                        className={`text-3xl transition-transform hover:scale-110 ${star <= rating ? 'text-gold-400 drop-shadow-sm' : 'text-warm-300 grayscale opacity-50'}`}
+                      >
+                        ⭐
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-espresso mb-1 block">Your Feedback</label>
+                  <textarea
+                    className="input min-h-[100px] resize-y text-sm"
+                    placeholder="Tell us what you liked..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                  />
+                </div>
+                <button
+                  onClick={submitReview}
+                  disabled={isSubmitting}
+                  className="btn-primary w-full py-3 text-base"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

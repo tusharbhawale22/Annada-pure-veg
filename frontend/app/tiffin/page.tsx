@@ -4,17 +4,42 @@ import { useState } from 'react';
 import { useQuery } from 'react-query';
 import { settingsApi, tiffinApi, paymentApi } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import Link from 'next/link';
-import { Check, ChevronRight, Star, Clock, Truck, RefreshCw } from 'lucide-react';
+import Image from 'next/image';
+import { Check, ChevronRight } from 'lucide-react';
 
 const PLAN_FEATURES: Record<string, string[]> = {
   lunch:  ['Fresh lunch daily', 'Delivered by 12:30 PM', 'Dal + Sabzi + Roti + Rice', 'Seasonal vegetables'],
-  dinner: ['Fresh dinner daily', 'Delivered by 8:00 PM',  'Dal + Sabzi + Roti + Rice', 'Seasonal vegetables'],
+  dinner: ['Fresh dinner daily', 'Delivered by 6:00 PM',  'Dal + Sabzi + Roti + Rice', 'Seasonal vegetables'],
   both:   ['Lunch + Dinner daily', 'Two delivery slots', 'Dal + Sabzi + Roti + Rice', 'Best value plan'],
 };
+
+const PLAN_EMOJIS: Record<string, string> = { lunch: '☀️', dinner: '🌙', both: '✨' };
+
+const BENEFITS = [
+  {
+    title: 'On Time',
+    desc: 'Delivered at your preferred time',
+    img: '/images/on-time.png',
+  },
+  {
+    title: 'Daily Delivery',
+    desc: 'No off days, 7 days a week',
+    img: '/images/daily-delivery.png',
+  },
+  {
+    title: 'Fresh Food',
+    desc: 'Cooked fresh every day',
+    img: '/images/fresh-food.png',
+  },
+  {
+    title: 'Pause Anytime',
+    desc: 'Pause or cancel anytime',
+    img: '/images/pause-anytime.png',
+  },
+];
 
 export default function TiffinPage() {
   const router = useRouter();
@@ -91,59 +116,62 @@ export default function TiffinPage() {
     }
   };
 
-  const PLAN_EMOJIS: Record<string, string> = { lunch: '☀️', dinner: '🌙', both: '🌟' };
-
   return (
-    <div className="min-h-screen bg-cream pt-20">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-espresso to-[#4a2010] py-14 px-4">
-        <div className="container-custom text-center text-white">
-          <p className="text-gold-300 font-semibold text-sm uppercase tracking-widest mb-2">Daily Delivery</p>
-          <h1 className="font-display text-4xl md:text-5xl font-bold mb-3">🍱 Tiffin Service</h1>
-          <p className="text-white/70 text-lg max-w-xl mx-auto">
-            Ghar ka khana, rozana. Subscribe and get fresh homestyle food delivered every day.
+    <div className="min-h-screen bg-[#FFF5ED] pt-20">
+
+      {/* ── Hero Header ── */}
+      <div className="bg-gradient-to-b from-[#3D1000] to-[#6B2200] py-14 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+        <div className="max-w-2xl mx-auto text-center text-white relative z-10">
+          <p className="text-[#FFD700] font-bold text-xs uppercase tracking-[0.3em] mb-3">DAILY DELIVERY</p>
+          <h1 className="font-display text-5xl md:text-6xl font-bold mb-4 flex items-center justify-center gap-3">
+            <span className="text-4xl">🍱</span> Tiffin Service
+          </h1>
+          <p className="text-white/75 text-base md:text-lg leading-relaxed">
+            Ghar ka khana, rozana. Subscribe and get fresh homestyle food<br className="hidden md:block" /> delivered every day.
           </p>
         </div>
       </div>
 
-      <div className="container-custom py-12">
+      <div className="max-w-6xl mx-auto px-4 py-10">
+
         {step === 'form' && selected ? (
-          /* Subscription Form */
+          /* ── Subscription Form ── */
           <div className="max-w-xl mx-auto">
-            <button onClick={() => setStep('plans')} className="btn-ghost mb-6 text-sm">
+            <button onClick={() => setStep('plans')} className="flex items-center gap-1 text-sm text-espresso/60 hover:text-espresso mb-6 font-medium transition-colors">
               ← Back to Plans
             </button>
 
-            <div className="card p-6 mb-6 bg-saffron-50 border-saffron-200">
+            <div className="bg-[#FFF0E5] border border-[#E65100]/20 rounded-2xl p-6 mb-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-xs font-semibold text-saffron-900/70 uppercase tracking-wider">Selected Plan</p>
+                  <p className="text-xs font-semibold text-[#E65100] uppercase tracking-wider">Selected Plan</p>
                   <p className="font-display font-bold text-espresso text-xl mt-0.5">{selected.name}</p>
                 </div>
-                <p className="font-display font-bold text-saffron-900 text-2xl">{formatCurrency(selected.price)}</p>
+                <p className="font-display font-bold text-[#E65100] text-2xl">{formatCurrency(selected.price)}</p>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="card p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-warm-100 p-6 space-y-4">
               <h2 className="font-display font-bold text-xl text-espresso">Delivery Details</h2>
 
               <div>
-                <label className="input-label">Start Date *</label>
-                <input type="date" required className="input"
+                <label className="block text-xs font-semibold text-espresso/70 uppercase tracking-wide mb-1.5">Start Date *</label>
+                <input type="date" required className="w-full border border-warm-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E65100]/30"
                   min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
                   value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
               </div>
 
               <div>
-                <label className="input-label">Address Line 1 *</label>
-                <input type="text" required placeholder="House/Flat number, Street name" className="input"
+                <label className="block text-xs font-semibold text-espresso/70 uppercase tracking-wide mb-1.5">Address Line 1 *</label>
+                <input type="text" required placeholder="House/Flat number, Street name" className="w-full border border-warm-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E65100]/30"
                   value={form.line1} onChange={(e) => setForm({ ...form, line1: e.target.value })} />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="input-label">Area *</label>
-                  <select required className="input" value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })}>
+                  <label className="block text-xs font-semibold text-espresso/70 uppercase tracking-wide mb-1.5">Area *</label>
+                  <select required className="w-full border border-warm-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E65100]/30" value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })}>
                     <option value="">Select area</option>
                     {['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri'].map((a) => (
                       <option key={a} value={a}>{a}</option>
@@ -151,25 +179,26 @@ export default function TiffinPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="input-label">Pincode *</label>
-                  <input type="text" required placeholder="411014" maxLength={6} className="input"
+                  <label className="block text-xs font-semibold text-espresso/70 uppercase tracking-wide mb-1.5">Pincode *</label>
+                  <input type="text" required placeholder="411014" maxLength={6} className="w-full border border-warm-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E65100]/30"
                     value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} />
                 </div>
               </div>
 
               <div>
-                <label className="input-label">Landmark</label>
-                <input type="text" placeholder="Near blue gate, opp. XYZ building" className="input"
+                <label className="block text-xs font-semibold text-espresso/70 uppercase tracking-wide mb-1.5">Landmark</label>
+                <input type="text" placeholder="Near blue gate, opp. XYZ building" className="w-full border border-warm-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E65100]/30"
                   value={form.landmark} onChange={(e) => setForm({ ...form, landmark: e.target.value })} />
               </div>
 
               <div>
-                <label className="input-label">Special Notes (optional)</label>
-                <textarea placeholder="Any dietary preferences or delivery instructions..." rows={3} className="input resize-none"
+                <label className="block text-xs font-semibold text-espresso/70 uppercase tracking-wide mb-1.5">Special Notes (optional)</label>
+                <textarea placeholder="Any dietary preferences or delivery instructions..." rows={3} className="w-full border border-warm-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E65100]/30 resize-none"
                   value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
               </div>
 
-              <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-4 text-base">
+              <button type="submit" disabled={loading}
+                className="w-full flex items-center justify-center gap-2 py-4 bg-[#E65100] text-white font-bold rounded-xl text-base hover:bg-[#C84B00] active:scale-[0.98] transition-all shadow-lg hover:shadow-xl disabled:opacity-60">
                 {loading ? 'Processing...' : `Pay ${formatCurrency(selected.price)} & Subscribe 🍱`}
               </button>
 
@@ -178,65 +207,83 @@ export default function TiffinPage() {
               </p>
             </form>
           </div>
+
         ) : (
-          /* Plan Selection */
+          /* ── Plan Selection ── */
           <>
-            {/* Benefits */}
+            {/* ── Benefits ── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-              {[
-                { icon: <Clock className="w-5 h-5" />, title: 'On Time', desc: 'Delivered at your preferred time' },
-                { icon: <Truck className="w-5 h-5" />, title: 'Daily Delivery', desc: 'No off days, 7 days a week' },
-                { icon: <Star className="w-5 h-5" />, title: 'Fresh Food', desc: 'Cooked fresh every day' },
-                { icon: <RefreshCw className="w-5 h-5" />, title: 'Pause Anytime', desc: 'Pause or cancel anytime' },
-              ].map((b, i) => (
-                <div key={i} className="card p-4 text-center">
-                  <div className="w-10 h-10 bg-saffron-50 rounded-xl flex items-center justify-center text-saffron-900 mx-auto mb-2">
-                    {b.icon}
+              {BENEFITS.map((b, i) => (
+                <div key={i} className="bg-[#FDF0E6] rounded-2xl p-5 flex flex-col items-center text-center border border-[#F5DCC8] hover:shadow-md transition-all hover:-translate-y-0.5">
+                  <div className="w-24 h-24 mb-3 relative flex-shrink-0">
+                    <Image
+                      src={b.img}
+                      alt={b.title}
+                      fill
+                      className="object-contain drop-shadow-md"
+                    />
                   </div>
-                  <p className="font-semibold text-espresso text-sm">{b.title}</p>
-                  <p className="text-xs text-espresso/60 mt-0.5">{b.desc}</p>
+                  <p className="font-bold text-[#3D1000] text-sm">{b.title}</p>
+                  <p className="text-xs text-[#7B4B2A] mt-1 leading-snug">{b.desc}</p>
                 </div>
               ))}
             </div>
 
-            <div className="text-center mb-8">
-              <h2 className="font-display font-bold text-2xl text-espresso">Choose Your Plan</h2>
-              <p className="text-espresso/60 mt-1">All plans include fresh Dal, Sabzi, Roti & Rice daily</p>
+            {/* ── Plans Heading ── */}
+            <div className="text-center mb-10">
+              <h2 className="font-display font-bold text-3xl text-[#2C1005]">Choose Your Plan</h2>
+              <p className="text-[#7B4B2A] mt-2 text-sm">All plans include fresh Dal, Sabzi, Roti & Rice daily</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* ── Plan Cards ── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {plans.map((plan: { id: string; name: string; planType: string; mealType: string; price: number; description: string }) => {
-                const isPopular = plan.id === 'ml'; // Monthly Lunch
+                const isPopular = plan.planType === 'monthly';
+
                 return (
-                  <div key={plan.id} className={`card-hover p-6 relative flex flex-col ${isPopular ? 'ring-2 ring-saffron-900 ring-offset-2' : ''}`}>
+                  <div key={plan.id} className={`relative bg-white rounded-2xl p-6 flex flex-col border-2 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
+                    isPopular ? 'border-[#E65100]' : 'border-[#F0E0D0]'
+                  }`}>
+
+                    {/* Popular Badge */}
                     {isPopular && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-saffron-900 text-white text-xs font-bold px-3 py-1 rounded-full">
+                      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#E65100] text-white text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1 shadow-sm whitespace-nowrap">
                         ⭐ Most Popular
                       </div>
                     )}
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-2xl">{PLAN_EMOJIS[plan.mealType]}</span>
+
+                    {/* Plan Header */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0 bg-[#FFF3E0]">
+                        {PLAN_EMOJIS[plan.mealType]}
+                      </div>
                       <div>
-                        <p className="font-display font-bold text-espresso text-lg">{plan.name}</p>
-                        <p className="text-xs text-espresso/50 capitalize">{plan.planType} plan</p>
+                        <p className="font-display font-bold text-[#2C1005] text-lg leading-tight">{plan.name}</p>
+                        <p className="text-xs text-[#9B6B4A] capitalize">{plan.planType} Plan</p>
                       </div>
                     </div>
-                    <p className="text-sm text-espresso/60 mb-4 leading-relaxed">{plan.description}</p>
+
+                    {/* Description */}
+                    <p className="text-sm text-[#7B4B2A]/80 mb-4 leading-relaxed">{plan.description}</p>
+
+                    {/* Features */}
                     <ul className="space-y-2 mb-6 flex-1">
                       {PLAN_FEATURES[plan.mealType].map((f) => (
-                        <li key={f} className="flex items-center gap-2 text-sm text-espresso/80">
-                          <Check className="w-4 h-4 text-leaf flex-shrink-0" />
+                        <li key={f} className="flex items-center gap-2 text-sm text-[#5C3317]">
+                          <Check className="w-4 h-4 text-[#E65100] flex-shrink-0" />
                           {f}
                         </li>
                       ))}
                     </ul>
-                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-warm-200">
+
+                    {/* Price + CTA */}
+                    <div className="flex items-center justify-between pt-4 border-t border-[#F5DCC8]">
                       <div>
-                        <p className="font-display font-bold text-2xl text-saffron-900">{formatCurrency(plan.price)}</p>
-                        <p className="text-xs text-espresso/50">/{plan.planType}</p>
+                        <p className="font-display font-bold text-2xl text-[#E65100]">&#8377;{plan.price}</p>
+                        <p className="text-xs text-[#9B6B4A]">/{plan.planType}</p>
                       </div>
                       <button onClick={() => handleSelectPlan(plan)}
-                        className="flex items-center gap-1.5 px-4 py-2.5 bg-saffron-900 text-white text-sm font-bold rounded-xl hover:bg-saffron-800 active:scale-95 transition-all">
+                        className="flex items-center gap-1.5 px-5 py-2.5 bg-[#E65100] text-white text-sm font-bold rounded-xl hover:bg-[#C84B00] active:scale-95 transition-all shadow-md hover:shadow-lg">
                         Subscribe <ChevronRight className="w-4 h-4" />
                       </button>
                     </div>
@@ -245,7 +292,7 @@ export default function TiffinPage() {
               })}
             </div>
 
-            <p className="text-center text-sm text-espresso/50 mt-8">
+            <p className="text-center text-sm text-espresso/50 pb-10">
               🌿 All tiffins are 100% pure vegetarian · No onion-garlic options available on request
             </p>
           </>

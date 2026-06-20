@@ -44,11 +44,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream pt-20 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-b from-[#C84B00] to-[#E65100] py-12 flex items-center justify-center px-4 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-48 h-48 bg-saffron-900/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-64 h-64 bg-gold-800/5 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
       </div>
 
       <div className="w-full max-w-md relative">
@@ -59,15 +59,15 @@ export default function LoginPage() {
               <Leaf className="w-6 h-6 text-white" />
             </div>
           </Link>
-          <h1 className="font-display text-3xl font-bold text-espresso mt-4 mb-1">Welcome Back</h1>
-          <p className="text-espresso/60 text-sm">Login to your Annada Pure Veg account</p>
+          <h1 className="font-display text-4xl font-bold text-white mt-4 mb-2">Welcome Back</h1>
+          <p className="text-white/80 text-sm">Login to your Annada Pure Veg account</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="card p-8 space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="bg-gradient-to-b from-[#3D1000] to-[#5A1C08] border border-white/10 rounded-3xl shadow-2xl p-8 space-y-6 relative overflow-hidden text-white">
 
           {/* Email */}
           <div>
-            <label className="input-label" htmlFor="email">Email Address</label>
+            <label className="block text-sm font-semibold text-white/90 mb-1.5" htmlFor="email">Email Address</label>
             <input id="email" type="email" autoComplete="email" className="input"
               placeholder="you@example.com" {...register('email')} />
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
@@ -75,7 +75,12 @@ export default function LoginPage() {
 
           {/* Password */}
           <div>
-            <label className="input-label" htmlFor="password">Password</label>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="block text-sm font-semibold text-white/90" htmlFor="password">Password</label>
+              <Link href="/auth/forgot-password" className="text-xs font-semibold text-[#FFD700] hover:text-[#FFE066] hover:underline">
+                Forgot Password?
+              </Link>
+            </div>
             <div className="relative">
               <input id="password" type={showPw ? 'text' : 'password'} autoComplete="current-password"
                 className="input pr-11" placeholder="••••••••" {...register('password')} />
@@ -88,10 +93,10 @@ export default function LoginPage() {
           </div>
 
           {/* Submit */}
-          <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-3.5 text-base mt-2">
+          <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#FFD700] to-[#F9A825] hover:from-[#FFE066] hover:to-[#FFB300] text-[#3D1000] font-bold text-base transition-all duration-200 shadow-md active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed mt-2">
             {loading ? (
               <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-[#3D1000] border-t-transparent rounded-full animate-spin" />
                 Logging in...
               </span>
             ) : (
@@ -99,16 +104,16 @@ export default function LoginPage() {
             )}
           </button>
 
-          <p className="text-center text-sm text-espresso/60">
+          <p className="text-center text-sm text-white/70">
             Don't have an account?{' '}
             <Link href={`/auth/register${redirect !== '/' ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}
-              className="font-semibold text-saffron-900 hover:underline">
+              className="font-bold text-[#FFD700] hover:text-[#FFE066] hover:underline transition-colors">
               Register here
             </Link>
           </p>
         </form>
 
-        <p className="text-center text-xs text-espresso/40 mt-6">
+        <p className="text-center text-xs text-white/60 mt-6">
           🌿 100% Pure Vegetarian · Annada Pure Veg, Pune
         </p>
       </div>
