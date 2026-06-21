@@ -21,6 +21,21 @@ router.post('/validate', protect, async (req, res, next) => {
 
     if (!code) return res.status(400).json({ success: false, message: 'Coupon code is required.' });
 
+    // Check if user has already used this coupon code in a previous non-failed order
+    const Order = require('../models/Order');
+    const existingUsage = await Order.findOne({
+      user: req.user._id,
+      couponCode: code.toUpperCase(),
+      paymentStatus: { $ne: 'failed' }
+    });
+
+    if (existingUsage) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already used this coupon code.'
+      });
+    }
+
     const coupon = await Coupon.findOne({ code: code.toUpperCase(), isActive: true });
 
     if (!coupon) return res.status(404).json({ success: false, message: 'Invalid coupon code.' });

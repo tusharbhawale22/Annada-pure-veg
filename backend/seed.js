@@ -333,7 +333,7 @@ const storeSettings = {
   freeDeliveryAbove: 300,
   deliveryAreas: ['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri'],
   taxRate: 5,
-  googleMapsLink: 'https://maps.google.com/?q=Anand+Park+Bus+Stop+Wadgaon+Sheri+Pune',
+  googleMapsLink: 'https://www.google.com/maps/dir/?api=1&destination=Annada+Pure+Veg,+Anand+Park+Bus+Stop,+Wadgaon+Sheri,+Pune',
 };
 
 // ── Run Seed ───────────────────────────────────────────────

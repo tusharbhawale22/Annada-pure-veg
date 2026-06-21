@@ -59,6 +59,10 @@ const tiffinSubscriptionSchema = new mongoose.Schema({
     type: Date,
     default: null, // Set when status = 'paused'
   },
+  pausedAt: {
+    type: Date,
+    default: null,
+  },
 
   // ── Payment ───────────────────────────────────────────────
   price: {
@@ -92,18 +96,22 @@ tiffinSubscriptionSchema.index({ status: 1 });
 tiffinSubscriptionSchema.index({ endDate: 1 });
 tiffinSubscriptionSchema.index({ subscriptionNumber: 1 });
 
-// ── Pre-save: auto-generate subscription number ────────────
-tiffinSubscriptionSchema.pre('save', async function (next) {
+// ── Pre-validate: auto-generate subscription number & end date ──
+tiffinSubscriptionSchema.pre('validate', async function (next) {
   if (this.isNew) {
-    const count = await mongoose.model('TiffinSubscription').countDocuments();
-    this.subscriptionNumber = `TIF${String(count + 1).padStart(4, '0')}`;
+    if (!this.subscriptionNumber) {
+      const count = await mongoose.model('TiffinSubscription').countDocuments();
+      this.subscriptionNumber = `TIF${String(count + 1).padStart(4, '0')}`;
+    }
 
     // Auto-calculate end date
-    const start = new Date(this.startDate);
-    if (this.planType === 'weekly') {
-      this.endDate = new Date(start.setDate(start.getDate() + 7));
-    } else {
-      this.endDate = new Date(start.setDate(start.getDate() + 30));
+    if (this.startDate) {
+      const start = new Date(this.startDate);
+      if (this.planType === 'weekly') {
+        this.endDate = new Date(start.setDate(start.getDate() + 7));
+      } else {
+        this.endDate = new Date(start.setDate(start.getDate() + 30));
+      }
     }
   }
   next();

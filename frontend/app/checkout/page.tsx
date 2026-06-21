@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
-import { orderApi, couponApi, paymentApi, authApi } from '@/lib/api';
+import { orderApi, couponApi, paymentApi, authApi, settingsApi } from '@/lib/api';
+import { useQuery } from 'react-query';
 import { formatCurrency } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -25,6 +26,10 @@ export default function CheckoutPage() {
   const router  = useRouter();
   const { items, getTotalPrice, clearCart, removeItem } = useCartStore();
   const { user, isAuthenticated, updateUser } = useAuthStore();
+
+  const { data: settings } = useQuery('settings', () =>
+    settingsApi.get().then((r) => r.data.settings)
+  );
 
   const [orderType,  setOrderType]  = useState<'delivery' | 'pickup'>('delivery');
   const [payMethod,  setPayMethod]  = useState<'razorpay' | 'cod'>('razorpay');
@@ -68,9 +73,26 @@ export default function CheckoutPage() {
   })();
 
   const subtotal    = getTotalPrice();
-  const deliveryFee = orderType === 'pickup' ? 0 : subtotal >= 300 ? 0 : 30;
+
+  const deliveryAreas = settings?.deliveryAreas ?? ['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri'];
+  const defaultFreeDeliveryAbove = settings?.freeDeliveryAbove ?? 300;
+  const defaultDeliveryFee = settings?.deliveryFee ?? 30;
+
+  const isEligibleForFreeDelivery = (() => {
+    if (orderType === 'pickup') return false;
+    if (!activeAddress || !activeAddress.area) return false;
+    const targetArea = activeAddress.area.trim().toLowerCase();
+    return deliveryAreas.some((a: string) => a.trim().toLowerCase() === targetArea);
+  })();
+
+  const deliveryFee = orderType === 'pickup'
+    ? 0
+    : (isEligibleForFreeDelivery && subtotal >= defaultFreeDeliveryAbove)
+      ? 0
+      : defaultDeliveryFee;
+
   const discount    = couponData?.discount ?? 0;
-  const taxAmount   = Math.round(((subtotal - discount + deliveryFee) * 5) / 100);
+  const taxAmount   = Math.round(((subtotal - discount + deliveryFee) * (settings?.taxRate ?? 5)) / 100);
   const total       = subtotal - discount + deliveryFee + taxAmount;
 
   if (!isAuthenticated) {
@@ -312,11 +334,8 @@ export default function CheckoutPage() {
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="input-label">Area *</label>
-                        <select className="input" value={newAddress.area}
-                          onChange={(e) => setNewAddress({ ...newAddress, area: e.target.value })}>
-                          <option value="">Select area</option>
-                          {['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri'].map((a) => <option key={a}>{a}</option>)}
-                        </select>
+                        <input className="input" placeholder="e.g. Kharadi" value={newAddress.area}
+                          onChange={(e) => setNewAddress({ ...newAddress, area: e.target.value })} />
                       </div>
                       <div>
                         <label className="input-label">Pincode *</label>

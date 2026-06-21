@@ -62,8 +62,16 @@ router.post('/', protect, orderLimiter, validateOrder, async (req, res, next) =>
     }
 
     // Check free delivery
-    const actualDeliveryFee = (settings?.freeDeliveryAbove && subtotal >= settings.freeDeliveryAbove)
+    let isEligibleForFreeDelivery = false;
+    if (orderType === 'delivery' && deliveryAddress && deliveryAddress.area) {
+      const targetArea = deliveryAddress.area.trim().toLowerCase();
+      const allowedAreas = settings?.deliveryAreas || ['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri'];
+      isEligibleForFreeDelivery = allowedAreas.some(area => area.trim().toLowerCase() === targetArea);
+    }
+
+    const actualDeliveryFee = (isEligibleForFreeDelivery && settings?.freeDeliveryAbove && subtotal >= settings.freeDeliveryAbove)
       ? 0 : deliveryFee;
+
 
     // Apply coupon
     let discount = 0;
@@ -71,7 +79,14 @@ router.post('/', protect, orderLimiter, validateOrder, async (req, res, next) =>
     if (couponCode) {
       const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
       if (coupon && coupon.expiresAt > new Date() && coupon.usedCount < coupon.maxUses) {
-        if (subtotal >= coupon.minOrderAmount) {
+        // Enforce single-use check during order creation
+        const existingUsage = await Order.findOne({
+          user: req.user._id,
+          couponCode: couponCode.toUpperCase(),
+          paymentStatus: { $ne: 'failed' }
+        });
+
+        if (!existingUsage && subtotal >= coupon.minOrderAmount) {
           if (coupon.discountType === 'percentage') {
             discount = (subtotal * coupon.discountValue) / 100;
             if (coupon.maxDiscount) discount = Math.min(discount, coupon.maxDiscount);
@@ -234,6 +249,79 @@ router.patch('/:id/status', protect, adminOnly, async (req, res, next) => {
     await order.save();
 
     res.json({ success: true, message: `Order status updated to "${status}".`, order });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── POST /api/orders/offline (Admin Only) ──────────────────
+router.post('/offline', protect, adminOnly, async (req, res, next) => {
+  try {
+    const { items, orderType, paymentMethod, paymentStatus, customerName, customerPhone, deliveryAddress, notes } = req.body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'Order must have at least one item.' });
+    }
+
+    // Fetch settings for tax and delivery fee
+    const settings = await StoreSettings.findOne();
+    const taxRate = settings?.taxRate || 5;
+    const deliveryFee = orderType === 'delivery' ? (settings?.deliveryFee || 30) : 0;
+
+    let subtotal = 0;
+    const orderItems = [];
+
+    for (const item of items) {
+      const menuItem = await MenuItem.findById(item.menuItem);
+      if (!menuItem) {
+        return res.status(404).json({ success: false, message: `Menu item ${item.menuItem} not found.` });
+      }
+
+      const lineTotal = menuItem.price * item.quantity;
+      subtotal += lineTotal;
+
+      orderItems.push({
+        menuItem: menuItem._id,
+        name: menuItem.name,
+        price: menuItem.price,
+        quantity: item.quantity,
+        imageUrl: menuItem.imageUrl,
+      });
+    }
+
+    // Apply delivery fee only if it's delivery and subtotal is below freeDeliveryAbove threshold
+    const actualDeliveryFee = (orderType === 'delivery' && settings?.freeDeliveryAbove && subtotal >= settings.freeDeliveryAbove)
+      ? 0 : deliveryFee;
+
+    // Calculate totals
+    const taxableAmount = subtotal + actualDeliveryFee;
+    const tax = Math.round((taxableAmount * taxRate) / 100);
+    const totalAmount = taxableAmount + tax;
+
+    // Create the offline order
+    const order = await Order.create({
+      items: orderItems,
+      subtotal,
+      deliveryFee: actualDeliveryFee,
+      discount: 0,
+      tax,
+      totalAmount,
+      deliveryAddress: orderType === 'delivery' ? deliveryAddress : undefined,
+      orderType,
+      paymentMethod,
+      paymentStatus: paymentStatus || 'paid',
+      orderStatus: 'delivered',
+      isOffline: true,
+      customerName: customerName || 'Offline Customer',
+      customerPhone: customerPhone || '',
+      notes: notes || '',
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Offline order created successfully! 📝',
+      order,
+    });
   } catch (err) {
     next(err);
   }

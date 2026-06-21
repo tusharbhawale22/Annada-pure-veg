@@ -135,6 +135,7 @@ export default function HeroFoodCards() {
                   src={imgSrc}
                   alt={item.name}
                   fill
+                  sizes="56px"
                   className="object-cover group-hover:scale-110 transition-transform duration-300"
                 />
               </div>

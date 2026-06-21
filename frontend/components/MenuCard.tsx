@@ -60,7 +60,14 @@ export default function MenuCard({ item, layout = 'grid' }: MenuCardProps) {
         {/* Image */}
         <div className="relative w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-warm-200">
           {!imgError && item.imageUrl ? (
-            <Image src={item.imageUrl} alt={item.name} fill className="object-cover" onError={() => setImgError(true)} />
+            <Image
+              src={item.imageUrl}
+              alt={item.name}
+              fill
+              sizes="96px"
+              className="object-cover"
+              onError={() => setImgError(true)}
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-3xl">🍽️</div>
           )}
@@ -128,20 +135,13 @@ export default function MenuCard({ item, layout = 'grid' }: MenuCardProps) {
             src={item.imageUrl}
             alt={item.name}
             fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             unoptimized={item.imageUrl.includes('.gif')}
             className="object-contain p-2 transition-transform duration-500 group-hover:scale-110"
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="relative w-20 h-20 opacity-80 animate-float-slow">
-            <Image 
-              src="https://media.giphy.com/media/VekyF6K0pXm3fIT6aW/giphy.gif" 
-              alt="Delicious food" 
-              fill 
-              unoptimized
-              className="object-contain" 
-            />
-          </div>
+          <div className="text-5xl select-none animate-float-slow">🍽️</div>
         )}
         
         {/* Sold out overlay */}

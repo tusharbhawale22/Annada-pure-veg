@@ -11,8 +11,6 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { Eye, EyeOff, Leaf, Check, MapPin } from 'lucide-react';
 
-const DELIVERY_AREAS = ['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri'];
-
 const registerSchema = z.object({
   name:    z.string().min(2, 'Name must be at least 2 characters'),
   email:   z.string().email('Enter a valid email'),
@@ -195,10 +193,13 @@ export default function RegisterPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-white/85 mb-1" htmlFor="addressArea">Area</label>
-                  <select id="addressArea" className="input text-sm" {...register('addressArea')}>
-                    <option value="" className="text-espresso">Select area</option>
-                    {DELIVERY_AREAS.map((a) => <option key={a} className="text-espresso">{a}</option>)}
-                  </select>
+                  <input
+                    id="addressArea"
+                    type="text"
+                    className="input text-sm"
+                    placeholder="e.g. Kharadi"
+                    {...register('addressArea')}
+                  />
                   {errors.addressArea && <p className="text-red-500 text-xs mt-1">{errors.addressArea.message}</p>}
                 </div>
                 <div>

@@ -67,10 +67,24 @@ export default async function HomePage() {
         
         {/* Absolute Background Food Imagery (Left side) */}
         <div className="absolute top-10 -left-20 w-[400px] h-[400px] opacity-80 blur-[2px] animate-pulse">
-          <Image src="https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=400&h=400" alt="Poha" fill className="object-cover rounded-full mix-blend-luminosity" />
+          <Image
+            src="https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=400&h=400"
+            alt="Poha"
+            fill
+            sizes="400px"
+            priority
+            className="object-cover rounded-full mix-blend-luminosity"
+          />
         </div>
         <div className="absolute bottom-10 -left-32 w-[500px] h-[500px] opacity-90 blur-[1px]">
-          <Image src="https://images.unsplash.com/photo-1589301760014-d929f39ce9b1?auto=format&fit=crop&q=80&w=500&h=500" alt="Idli" fill className="object-cover rounded-full" />
+          <Image
+            src="https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&q=80&w=500&h=500"
+            alt="Idli"
+            fill
+            sizes="500px"
+            priority
+            className="object-cover rounded-full"
+          />
         </div>
         <SpiceParticles />
 
@@ -147,25 +161,7 @@ export default async function HomePage() {
           <div className="w-px h-8 bg-gradient-to-b from-white/40 to-transparent" />
         </div>
 
-        {/* Simple Footer Strip */}
-        <div className="absolute bottom-0 left-0 right-0 bg-[#3D1000]/40 backdrop-blur-md border-t border-white/10 py-3">
-          <div className="container-custom flex flex-col md:flex-row items-center justify-between text-white/70 text-[11px] font-medium px-4">
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1.5"><MapPin className="w-3 h-3" /> Address, Wadgaon Sheri, Pune</span>
-              <span className="flex items-center gap-1.5"><Phone className="w-3 h-3" /> +91 2331 7887</span>
-            </div>
-            <div className="flex gap-6 my-2 md:my-0">
-              <Link href="/" className="hover:text-white transition-colors">Home</Link>
-              <Link href="/menu" className="hover:text-white transition-colors">Menu</Link>
-              <Link href="/tiffin" className="hover:text-white transition-colors">Tiffin</Link>
-              <Link href="/about" className="hover:text-white transition-colors">About Us</Link>
-              <Link href="/gallery" className="hover:text-white transition-colors">Gallery</Link>
-            </div>
-            <div>
-              © Copyright Annada Pure Veg.
-            </div>
-          </div>
-        </div>
+
       </section>
 
       {/* ═══════════════════════════════════════════════════
@@ -343,7 +339,7 @@ export default async function HomePage() {
                     HW2G+R2F, Mate Nagar,<br />
                     Wadgaon Sheri, Pune, Maharashtra 411014
                   </p>
-                  <a href="https://maps.google.com/?q=HW2G%2BR2F%2C+Mate+Nagar%2C+Wadgaon+Sheri%2C+Pune"
+                  <a href="https://www.google.com/maps/dir/?api=1&destination=Annada+Pure+Veg,+Wadgaon+Sheri,+Pune"
                     target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 mt-2 text-saffron-900 text-sm font-semibold hover:underline">
                     Get Directions →
@@ -407,7 +403,7 @@ export default async function HomePage() {
             {/* Google Maps embed */}
             <div className="rounded-2xl overflow-hidden shadow-warm-lg h-[420px] border border-warm-200">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3782.5!2d73.9094!3d18.5534!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTjCsDMzJzEyLjIiTiA3M8KwNTQnMzMuOCJF!5e0!3m2!1sen!2sin!4v1234567890"
+                src="https://maps.google.com/maps?q=Annada%20Pure%20Veg,%20Anand%20Park,%20Wadgaon%20Sheri,%20Pune&t=&z=15&ie=UTF8&iwloc=&output=embed"
                 width="100%"
                 height="100%"
                 style={{ border: 0, minHeight: '420px' }}

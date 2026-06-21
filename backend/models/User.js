@@ -106,6 +106,23 @@ userSchema.methods.createPasswordResetToken = function () {
 };
 
 /**
+ * Create a 6-digit password reset OTP and set its expiry time
+ * @returns {string}
+ */
+userSchema.methods.createPasswordResetOTP = function () {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(otp)
+    .digest('hex');
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  return otp;
+};
+
+/**
  * Return safe user object (no passwordHash)
  */
 userSchema.methods.toSafeObject = function () {

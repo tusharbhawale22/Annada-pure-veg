@@ -29,7 +29,19 @@ const orderSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: false, // Optional for offline orders
+  },
+  isOffline: {
+    type: Boolean,
+    default: false,
+  },
+  customerName: {
+    type: String,
+    default: '',
+  },
+  customerPhone: {
+    type: String,
+    default: '',
   },
   orderNumber: {
     type: String,
@@ -62,14 +74,14 @@ const orderSchema = new mongoose.Schema({
   },
   orderType: {
     type: String,
-    enum: ['delivery', 'pickup'],
+    enum: ['delivery', 'pickup', 'dine-in', 'takeaway'],
     required: true,
   },
 
   // ── Payment ───────────────────────────────────────────────
   paymentMethod: {
     type: String,
-    enum: ['razorpay', 'cod'],
+    enum: ['razorpay', 'cod', 'cash', 'upi', 'card'],
     required: true,
   },
   paymentStatus: {

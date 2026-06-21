@@ -197,16 +197,12 @@ router.post('/forgot-password', async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'No account found with this email address.' });
     }
 
-    const resetToken = user.createPasswordResetToken();
+    const otp = user.createPasswordResetOTP();
     await user.save({ validateBeforeSave: false });
 
-    // Use CLIENT_URL (frontend URL) for reset link
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
-    const resetUrl = `${clientUrl}/auth/reset-password?token=${resetToken}`;
-
-    // Send reset email
-    const emailSubject = 'Annada Pure Veg — Password Reset';
-    const emailText = `Hello ${user.name},\n\nWe received a request to reset the password for your account. Please reset your password by clicking on the link below:\n\n${resetUrl}\n\nThis link will expire in 10 minutes.\n\nIf you did not request this, you can ignore this email.\n\nAnnada Pure Veg 🌿`;
+    // Send reset email containing the OTP
+    const emailSubject = 'Annada Pure Veg — Password Reset OTP';
+    const emailText = `Hello ${user.name},\n\nYour password reset OTP is ${otp}.\n\nThis OTP will expire in 10 minutes.\n\nIf you did not request this, you can ignore this email.\n\nAnnada Pure Veg 🌿`;
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
         <div style="text-align: center; margin-bottom: 20px;">
@@ -214,13 +210,13 @@ router.post('/forgot-password', async (req, res, next) => {
           <p style="color: #666; font-style: italic; margin: 5px 0 0 0;">Ghar Jaisi Subah, Har Subah</p>
         </div>
         <hr style="border: 0; border-top: 1px solid #eee;" />
-        <div style="padding: 20px 0;">
-          <p>Hello <strong>${user.name}</strong>,</p>
-          <p>We received a request to reset the password for your account. Please click the button below to set a new password:</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetUrl}" style="background-color: #E65100; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Reset Password</a>
+        <div style="padding: 20px 0; text-align: center;">
+          <p style="text-align: left;">Hello <strong>${user.name}</strong>,</p>
+          <p style="text-align: left;">We received a request to reset the password for your account. Please use the following One-Time Password (OTP) to reset your password:</p>
+          <div style="background-color: #FDF0E6; border: 1px dashed #E65100; color: #E65100; padding: 15px 30px; font-size: 28px; font-weight: bold; letter-spacing: 5px; display: inline-block; margin: 20px auto; border-radius: 8px;">
+            ${otp}
           </div>
-          <p style="color: #666; font-size: 13px;">This link will expire in 10 minutes. If you did not request a password reset, you can safely ignore this email.</p>
+          <p style="color: #666; font-size: 13px; text-align: left; margin-top: 20px;">This OTP will expire in 10 minutes. If you did not request a password reset, you can safely ignore this email.</p>
         </div>
         <hr style="border: 0; border-top: 1px solid #eee;" />
         <p style="font-size: 11px; color: #999; text-align: center; margin-top: 20px;">
@@ -243,14 +239,11 @@ router.post('/forgot-password', async (req, res, next) => {
 
     const responseData = {
       success: true,
-      message: 'Password reset link has been sent to your email.',
+      message: 'Password reset OTP has been sent to your email.',
     };
 
     if (previewUrl) {
       responseData.previewUrl = previewUrl;
-    }
-    if (process.env.NODE_ENV !== 'production') {
-      responseData.resetUrl = resetUrl;
     }
 
     res.json(responseData);
@@ -280,6 +273,45 @@ router.post('/reset-password/:token', async (req, res, next) => {
 
     if (!user) {
       return res.status(400).json({ success: false, message: 'Reset token is invalid or has expired.' });
+    }
+
+    user.passwordHash = password; // plaintext, pre-save hook will hash it
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    await user.save();
+
+    res.json({ success: true, message: 'Password has been reset successfully! You can now log in.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── POST /api/auth/reset-password-otp ───────────────────────
+router.post('/reset-password-otp', async (req, res, next) => {
+  try {
+    const { email, otp, password } = req.body;
+    if (!email || !otp || !password) {
+      return res.status(400).json({ success: false, message: 'Email, OTP and new password are required.' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long.' });
+    }
+
+    const hashedOtp = crypto
+      .createHash('sha256')
+      .update(otp.trim())
+      .digest('hex');
+
+    // Find user with matching email, OTP and unexpired expiry
+    const user = await User.findOne({
+      email: email.toLowerCase(),
+      passwordResetToken: hashedOtp,
+      passwordResetExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'OTP is invalid or has expired.' });
     }
 
     user.passwordHash = password; // plaintext, pre-save hook will hash it

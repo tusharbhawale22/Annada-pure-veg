@@ -61,6 +61,7 @@ export const authApi = {
   changePassword: (data: any) => api.put('/auth/change-password', data),
   forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token: string, data: Record<string, string>) => api.post(`/auth/reset-password/${token}`, data),
+  resetPasswordOtp: (data: Record<string, string>) => api.post('/auth/reset-password-otp', data),
   addAddress: (data: any) => api.post('/auth/address', data),
   deleteAddress: (id: string) => api.delete(`/auth/address/${id}`),
 };
@@ -68,6 +69,7 @@ export const authApi = {
 // Orders
 export const orderApi = {
   create: (data: unknown) => api.post('/orders', data),
+  createOffline: (data: unknown) => api.post('/orders/offline', data),
   myOrders: (params?: Record<string, string>) => api.get('/orders/my', { params }),
   getOrder: (id: string) => api.get(`/orders/${id}`),
   getAllOrders: (params?: Record<string, string>) => api.get('/orders', { params }),

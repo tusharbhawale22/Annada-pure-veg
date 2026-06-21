@@ -100,11 +100,11 @@ const storeSettingsSchema = new mongoose.Schema({
   googleMapsEmbedUrl: {
     type: String,
     // Google Maps embed for Anand Park, Wadgaon Sheri, Pune
-    default: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3782.8978551089316!2d73.9094!3d18.5434!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c1d6e6e6e6e6%3A0x6e6e6e6e6e6e6e6e!2sAnand%20Park%2C%20Wadgaon%20Sheri%2C%20Pune%2C%20Maharashtra%20411014!5e0!3m2!1sen!2sin!4v1234567890',
+    default: 'https://maps.google.com/maps?q=Annada%20Pure%20Veg,%20Anand%20Park,%20Wadgaon%20Sheri,%20Pune&t=&z=15&ie=UTF8&iwloc=&output=embed',
   },
   googleMapsLink: {
     type: String,
-    default: 'https://maps.google.com/?q=Anand+Park+Bus+Stop+Wadgaon+Sheri+Pune',
+    default: 'https://www.google.com/maps/dir/?api=1&destination=Annada+Pure+Veg,+Anand+Park+Bus+Stop,+Wadgaon+Sheri,+Pune',
   },
 
   // ── Social Links ──────────────────────────────────────────

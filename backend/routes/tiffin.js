@@ -124,6 +124,7 @@ router.patch('/:id/pause', protect, async (req, res, next) => {
     }
 
     sub.status = 'paused';
+    sub.pausedAt = new Date();
     sub.pausedUntil = req.body.pausedUntil ? new Date(req.body.pausedUntil) : null;
     await sub.save();
 
@@ -136,12 +137,30 @@ router.patch('/:id/pause', protect, async (req, res, next) => {
 // ── PATCH /api/tiffin/:id/resume ───────────────────────────
 router.patch('/:id/resume', protect, async (req, res, next) => {
   try {
-    const sub = await TiffinSubscription.findByIdAndUpdate(
-      req.params.id,
-      { status: 'active', pausedUntil: null },
-      { new: true }
-    );
+    const sub = await TiffinSubscription.findById(req.params.id);
     if (!sub) return res.status(404).json({ success: false, message: 'Subscription not found.' });
+
+    if (sub.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
+    }
+
+    if (sub.status !== 'paused') {
+      return res.status(400).json({ success: false, message: 'Only paused subscriptions can be resumed.' });
+    }
+
+    // Calculate pause duration and extend endDate
+    if (sub.pausedAt) {
+      const pauseDurationMs = Date.now() - new Date(sub.pausedAt).getTime();
+      if (pauseDurationMs > 0) {
+        sub.endDate = new Date(new Date(sub.endDate).getTime() + pauseDurationMs);
+      }
+    }
+
+    sub.status = 'active';
+    sub.pausedAt = null;
+    sub.pausedUntil = null;
+    await sub.save();
+
     res.json({ success: true, message: 'Subscription resumed.', subscription: sub });
   } catch (err) {
     next(err);

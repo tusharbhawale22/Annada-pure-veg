@@ -171,12 +171,8 @@ export default function TiffinPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-espresso/70 uppercase tracking-wide mb-1.5">Area *</label>
-                  <select required className="w-full border border-warm-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E65100]/30" value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })}>
-                    <option value="">Select area</option>
-                    {['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri'].map((a) => (
-                      <option key={a} value={a}>{a}</option>
-                    ))}
-                  </select>
+                  <input type="text" required placeholder="e.g. Kharadi" className="w-full border border-warm-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E65100]/30"
+                    value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-espresso/70 uppercase tracking-wide mb-1.5">Pincode *</label>
@@ -220,6 +216,7 @@ export default function TiffinPage() {
                       src={b.img}
                       alt={b.title}
                       fill
+                      sizes="96px"
                       className="object-contain drop-shadow-md"
                     />
                   </div>

@@ -32,6 +32,9 @@ connectDB();
 
 const app = express();
 
+// Trust proxy for rate limiting (needed behind reverse proxies like Render/Vercel)
+app.set('trust proxy', 1);
+
 // ── Security Middleware ────────────────────────────────────
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allow Cloudinary images

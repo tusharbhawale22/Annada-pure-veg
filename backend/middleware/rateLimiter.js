@@ -4,13 +4,15 @@
 
 const rateLimit = require('express-rate-limit');
 
+const isProd = process.env.NODE_ENV === 'production';
+
 /**
  * generalLimiter — Applied to all /api routes
- * 100 requests per IP per 15 minutes
+ * 100 requests per IP per 15 minutes in prod, 1000 in dev
  */
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: isProd ? 100 : 1000,
   message: {
     success: false,
     message: 'Too many requests. Please try again after 15 minutes.',
@@ -22,11 +24,11 @@ const generalLimiter = rateLimit({
 
 /**
  * authLimiter — Applied to login/register routes
- * 5 attempts per IP per 15 minutes (brute-force protection)
+ * 5 attempts per IP per 15 minutes in prod, 100 in dev
  */
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: isProd ? 5 : 100,
   message: {
     success: false,
     message: 'Too many login attempts. Please try again after 15 minutes.',

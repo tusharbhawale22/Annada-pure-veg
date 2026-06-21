@@ -12,8 +12,6 @@ import {
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
-const DELIVERY_AREAS = ['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri'];
-
 type NewAddrForm = {
   label: string;
   line1: string;
@@ -304,11 +302,8 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <label className="input-label text-xs">Area *</label>
-                  <select className="input text-sm" value={addrForm.area}
-                    onChange={(e) => setAddrForm({ ...addrForm, area: e.target.value })}>
-                    <option value="">Select area</option>
-                    {DELIVERY_AREAS.map((a) => <option key={a}>{a}</option>)}
-                  </select>
+                  <input className="input text-sm" placeholder="e.g. Kharadi" value={addrForm.area}
+                    onChange={(e) => setAddrForm({ ...addrForm, area: e.target.value })} />
                 </div>
               </div>
 
