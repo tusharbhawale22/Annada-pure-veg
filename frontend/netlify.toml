@@ -1,0 +1,6 @@
+# Netlify Configuration File (Frontend folder)
+# Defines build settings when building inside the frontend base directory
+
+[build]
+  command = "npm run build"
+  publish = ".next"
