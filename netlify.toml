@@ -1,0 +1,12 @@
+# Netlify Configuration File
+# Guides Netlify to build the frontend subfolder as a Next.js App
+
+[build]
+  # Directory where the Next.js app is located
+  base = "frontend"
+
+  # Build command for Next.js
+  command = "npm run build"
+
+  # Folder to publish after Next.js build finishes
+  publish = ".next"
