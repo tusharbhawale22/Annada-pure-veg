@@ -8,6 +8,7 @@ import FloatingCartButton from '@/components/FloatingCartButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://annada-pure-veg.netlify.app'),
   title: {
     default: 'Annada Pure Veg — Ghar Jaisi Subah, Har Subah',
     template: '%s | Annada Pure Veg',

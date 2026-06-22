@@ -6,9 +6,9 @@ import { orderApi } from '@/lib/api';
 import OrderStepper from '@/components/OrderStepper';
 import { formatCurrency, formatDateTime, ORDER_STATUS_CONFIG } from '@/lib/utils';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
-export default function OrderConfirmationPage() {
+function OrderConfirmationContent() {
   const params  = useSearchParams();
   const orderId = params.get('orderId');
   const [countdown, setCountdown] = useState(30);
@@ -165,5 +165,20 @@ export default function OrderConfirmationPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-cream pt-20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-saffron-900 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-espresso font-semibold">Loading your order...</p>
+        </div>
+      </div>
+    }>
+      <OrderConfirmationContent />
+    </Suspense>
   );
 }

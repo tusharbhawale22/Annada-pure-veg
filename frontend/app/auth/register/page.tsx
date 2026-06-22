@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -45,7 +45,7 @@ const registerSchema = z.object({
 });
 type RegisterForm = z.infer<typeof registerSchema>;
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router  = useRouter();
   const params  = useSearchParams();
   const redirect = params.get('redirect') || '/';
@@ -248,5 +248,17 @@ export default function RegisterPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-[#C84B00] to-[#E65100] flex items-center justify-center text-white font-semibold">
+        Loading...
+      </div>
+    }>
+      <RegisterContent />
+    </Suspense>
   );
 }
