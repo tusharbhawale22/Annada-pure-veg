@@ -25,6 +25,14 @@ router.post('/', protect, orderLimiter, validateOrder, async (req, res, next) =>
 
     // Fetch store settings for fees and tax rate
     const settings = await StoreSettings.findOne();
+    
+    // Check if store is open
+    if (settings && settings.isOpen === false) {
+      return res.status(400).json({
+        success: false,
+        message: 'Sorry for the inconvenience, but the store is closed.'
+      });
+    }
     const taxRate = settings?.taxRate || 5;
     const deliveryFee = orderType === 'delivery' ? (settings?.deliveryFee || 30) : 0;
 

@@ -101,6 +101,7 @@ export default function CheckoutPage() {
   const discount    = couponData?.discount ?? 0;
   const taxAmount   = Math.round(((subtotal - discount + deliveryFee) * (settings?.taxRate ?? 5)) / 100);
   const total       = subtotal - discount + deliveryFee + taxAmount;
+  const isStoreClosed = settings?.isOpen === false;
 
   if (!isAuthenticated) {
     return (
@@ -143,6 +144,10 @@ export default function CheckoutPage() {
   };
 
   const handlePlaceOrder = async () => {
+    if (isStoreClosed) {
+      toast.error('Sorry for the inconvenience, but the store is closed.');
+      return;
+    }
     if (orderType === 'delivery') {
       if (!activeAddress?.line1 || !activeAddress?.area || !activeAddress?.pincode) {
         toast.error('Please fill in your delivery address');
@@ -243,6 +248,16 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-cream pt-20">
       <div className="container-custom py-8">
         <h1 className="font-display text-3xl font-bold text-espresso mb-8">Checkout</h1>
+
+        {isStoreClosed && (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 mb-6 flex items-start gap-3 shadow-sm max-w-xl animate-fade-in">
+            <span className="text-xl">⚠️</span>
+            <div className="flex-1">
+              <p className="font-bold text-sm">Store is Closed</p>
+              <p className="text-xs text-red-600 mt-0.5">Sorry for the inconvenience, but the store is closed.</p>
+            </div>
+          </div>
+        )}
 
         {paymentError && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 mb-6 flex items-start gap-3 shadow-sm max-w-xl animate-fade-in">
@@ -496,8 +511,12 @@ export default function CheckoutPage() {
                 <p className="font-display font-bold text-saffron-900 text-2xl">{formatCurrency(total)}</p>
               </div>
 
-              <button onClick={handlePlaceOrder} disabled={loading} className="btn-primary w-full justify-center py-4 text-base">
-                {loading ? 'Placing Order...' : payMethod === 'cod' ? '🛵 Place Order' : '💳 Make Payment'}
+              <button 
+                onClick={handlePlaceOrder} 
+                disabled={loading || isStoreClosed} 
+                className="btn-primary w-full justify-center py-4 text-base disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isStoreClosed ? 'Store is Closed' : loading ? 'Placing Order...' : payMethod === 'cod' ? '🛵 Place Order' : '💳 Make Payment'}
               </button>
 
               <p className="text-xs text-center text-espresso/50 mt-3">
