@@ -43,19 +43,13 @@ app.use(helmet({
 // ── CORS ───────────────────────────────────────────────────
 // Supports comma-separated CLIENT_URL values, all *.vercel.app previews, and localhost
 const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
-  .split(',')
-  .map((u) => u.trim())
-  .filter(Boolean);
+  .split(',').map((u) => u.trim()).filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g. mobile apps, Postman, curl)
     if (!origin) return callback(null, true);
-    // Allow any Vercel preview/production URL
     if (/^https:\/\/.*\.vercel\.app$/.test(origin)) return callback(null, true);
-    // Allow explicitly listed origins
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    // Allow localhost for development
     if (/^http:\/\/localhost:\d+$/.test(origin)) return callback(null, true);
     callback(new Error(`CORS: Origin ${origin} not allowed`));
   },
@@ -63,6 +57,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
 
 // ── Body Parsing ───────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
