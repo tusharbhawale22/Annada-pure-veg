@@ -91,9 +91,9 @@ export default function CartDrawer() {
                   Add some delicious items from our menu!
                 </p>
               </div>
-              <button onClick={closeCart} className="btn-primary mt-2">
+              <Link href="/menu" onClick={closeCart} className="btn-primary mt-2">
                 Browse Menu
-              </button>
+              </Link>
             </div>
           ) : (
             <div className="space-y-3">

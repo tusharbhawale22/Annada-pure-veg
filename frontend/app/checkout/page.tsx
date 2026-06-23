@@ -205,9 +205,7 @@ export default function CheckoutPage() {
             } catch (err) {
               console.error('Error reporting cancellation:', err);
             }
-            clearCart();
-            toast.error('Payment not done. Your order is saved.');
-            router.push(`/order-confirmation?orderId=${order._id}`);
+            toast.error('Payment cancelled. Your order has not been placed.');
           }
         },
       });

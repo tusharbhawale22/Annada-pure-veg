@@ -139,12 +139,20 @@ router.get('/my', protect, async (req, res, next) => {
   try {
     const { page = 1, limit = 10 } = req.query;
 
-    const orders = await Order.find({ user: req.user._id })
+    const filter = {
+      user: req.user._id,
+      $or: [
+        { paymentMethod: { $ne: 'razorpay' } },
+        { paymentStatus: 'paid' }
+      ]
+    };
+
+    const orders = await Order.find(filter)
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
 
-    const total = await Order.countDocuments({ user: req.user._id });
+    const total = await Order.countDocuments(filter);
 
     res.json({
       success: true,
