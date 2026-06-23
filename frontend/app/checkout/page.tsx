@@ -27,7 +27,7 @@ export default function CheckoutPage() {
   const { items, getTotalPrice, clearCart, removeItem } = useCartStore();
   const { user, isAuthenticated, updateUser } = useAuthStore();
 
-  const { data: settings } = useQuery('settings', () =>
+  const { data: settings } = useQuery('store-settings', () =>
     settingsApi.get().then((r) => r.data.settings)
   );
 
