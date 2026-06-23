@@ -95,6 +95,7 @@ function OrderConfirmationContent() {
     </div>
   );
 
+  const isPaymentPending = data.paymentMethod === 'razorpay' && data.paymentStatus !== 'paid';
   const statusConfig = ORDER_STATUS_CONFIG[data.orderStatus] || ORDER_STATUS_CONFIG['placed'];
 
   return (
@@ -104,16 +105,24 @@ function OrderConfirmationContent() {
         {/* Confirmation header */}
         <div className="text-center mb-8">
           <div className="text-6xl mb-3 animate-bounce">
-            {data.orderStatus === 'delivered' ? '🎉' : data.orderStatus === 'cancelled' ? '❌' : '✅'}
+            {data.orderStatus === 'delivered' ? '🎉' :
+             data.orderStatus === 'cancelled' ? '❌' :
+             isPaymentPending ? '⏳' : '✅'}
           </div>
           <h1 className="font-display text-3xl font-bold text-espresso">
             {data.orderStatus === 'delivered' ? 'Delivered!' :
              data.orderStatus === 'cancelled' ? 'Order Cancelled' :
+             isPaymentPending ? 'Order Not Confirmed' :
              'Order Confirmed!'}
           </h1>
           <p className="text-espresso/60 mt-2">
             Order <span className="font-bold text-saffron-900">#{data.orderNumber}</span>
           </p>
+          {isPaymentPending && (
+            <p className="text-red-600 font-bold mt-2 animate-pulse text-sm">
+              Pay and confirm your order
+            </p>
+          )}
           <p className="text-sm text-espresso/50 mt-1">{formatDateTime(data.createdAt)}</p>
         </div>
 

@@ -11,7 +11,7 @@ import { menuApi } from '@/lib/api';
 
 // Fallback images per category in case the DB item has no imageUrl
 const CATEGORY_IMAGES: Record<string, string> = {
-  'Morning Booster': 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=200&h=200',
+  'Morning Booster': 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&q=80&w=200&h=200',
   'Healthy Tummy': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=200&h=200',
   'Yummy Bites': 'https://images.unsplash.com/photo-1565299507177-b0ac66763828?auto=format&fit=crop&q=80&w=200&h=200',
   'Pizza': 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&q=80&w=200&h=200',
@@ -20,7 +20,7 @@ const CATEGORY_IMAGES: Record<string, string> = {
   'Others': 'https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&q=80&w=200&h=200',
 };
 
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=200&h=200';
+const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&q=80&w=200&h=200';
 
 interface MenuItem {
   _id: string;

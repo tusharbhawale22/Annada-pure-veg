@@ -65,17 +65,7 @@ export default async function HomePage() {
         {/* Glow behind text */}
         <div className="absolute top-1/4 -left-32 w-[600px] h-[600px] bg-[#FFA000]/30 rounded-full blur-[100px]" />
         
-        {/* Absolute Background Food Imagery (Left side) */}
-        <div className="absolute top-10 -left-20 w-[400px] h-[400px] opacity-80 blur-[2px] animate-pulse">
-          <Image
-            src="https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=400&h=400"
-            alt="Poha"
-            fill
-            sizes="400px"
-            priority
-            className="object-cover rounded-full mix-blend-luminosity"
-          />
-        </div>
+
         <div className="absolute bottom-10 -left-32 w-[500px] h-[500px] opacity-90 blur-[1px]">
           <Image
             src="https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&q=80&w=500&h=500"
