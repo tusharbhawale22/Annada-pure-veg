@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  User, Package, UtensilsCrossed, LogOut, ChevronRight,
+  User, Package, UtensilsCrossed, LogOut, ChevronRight, LayoutDashboard,
   MapPin, Plus, Trash2, X, Check, Home,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
@@ -144,6 +144,10 @@ export default function ProfilePage() {
     { href: '/profile/tiffin', icon: <UtensilsCrossed className="w-5 h-5" />, label: 'My Tiffin', desc: 'Manage tiffin subscriptions' },
   ];
 
+  const adminLink = user.role === 'admin'
+    ? [{ href: '/admin', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Admin Panel', desc: 'Manage orders, menu & more', admin: true }]
+    : [];
+
   return (
     <div className="min-h-screen bg-cream pt-20">
       <div className="container-custom py-8 max-w-xl mx-auto">
@@ -157,7 +161,7 @@ export default function ProfilePage() {
           <p className="text-espresso/60 text-sm mt-0.5">{user.email}</p>
           <p className="text-espresso/50 text-xs mt-0.5">Member since {formatDate(user.createdAt)}</p>
           {user.role === 'admin' && (
-            <span className="inline-block mt-2 bg-saffron-900 text-white text-xs font-bold px-3 py-1 rounded-full">Admin</span>
+            <Link href="/admin" className="inline-block mt-2 bg-saffron-900 text-white text-xs font-bold px-3 py-1 rounded-full hover:bg-saffron-800 transition-colors">⚙️ Admin</Link>
           )}
         </div>
 
@@ -342,9 +346,12 @@ export default function ProfilePage() {
 
         {/* ── Quick links ── */}
         <div className="space-y-3 mb-5">
-          {quickLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="card-hover p-4 flex items-center gap-3">
-              <div className="w-10 h-10 bg-saffron-50 rounded-xl flex items-center justify-center text-saffron-900">{link.icon}</div>
+          {[...adminLink, ...quickLinks].map((link) => (
+            <Link key={link.href} href={link.href}
+              className={`card-hover p-4 flex items-center gap-3 ${'admin' in link && link.admin ? 'border-2 border-orange-200 bg-orange-50' : ''}`}>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${'admin' in link && link.admin ? 'bg-[#C84B00] text-white' : 'bg-saffron-50 text-saffron-900'}`}>
+                {link.icon}
+              </div>
               <div className="flex-1">
                 <p className="font-semibold text-espresso text-sm">{link.label}</p>
                 <p className="text-xs text-espresso/50">{link.desc}</p>

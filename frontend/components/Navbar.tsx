@@ -240,6 +240,9 @@ export default function Navbar() {
                 <Link href="/profile" onClick={() => setMenuOpen(false)} className="px-4 py-3 rounded-xl text-sm font-semibold text-espresso hover:bg-warm-200">👤 My Profile</Link>
                 <Link href="/profile/orders" onClick={() => setMenuOpen(false)} className="px-4 py-3 rounded-xl text-sm font-semibold text-espresso hover:bg-warm-200">📦 My Orders</Link>
                 <Link href="/profile/tiffin" onClick={() => setMenuOpen(false)} className="px-4 py-3 rounded-xl text-sm font-semibold text-espresso hover:bg-warm-200">🍱 My Tiffin</Link>
+                {user?.role === 'admin' && (
+                  <Link href="/admin" onClick={() => setMenuOpen(false)} className="px-4 py-3 rounded-xl text-sm font-semibold text-[#C84B00] bg-orange-50 hover:bg-orange-100 border border-orange-200">⚙️ Admin Panel</Link>
+                )}
                 <button onClick={handleLogout} className="text-left px-4 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50">🚪 Logout</button>
               </>
             ) : (
