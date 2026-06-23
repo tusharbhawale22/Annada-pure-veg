@@ -29,6 +29,10 @@ router.get('/dashboard', async (req, res, next) => {
     const todayOrders = await Order.find({
       createdAt: { $gte: today, $lt: tomorrow },
       orderStatus: { $ne: 'cancelled' },
+      $or: [
+        { paymentMethod: { $ne: 'razorpay' } },
+        { paymentStatus: 'paid' }
+      ]
     });
 
     // Today's revenue
@@ -67,6 +71,10 @@ router.get('/dashboard', async (req, res, next) => {
       const dayOrders = await Order.find({
         createdAt: { $gte: date, $lt: nextDate },
         orderStatus: { $ne: 'cancelled' },
+        $or: [
+          { paymentMethod: { $ne: 'razorpay' } },
+          { paymentStatus: 'paid' }
+        ]
       });
 
       const dayRevenue = dayOrders
@@ -81,7 +89,12 @@ router.get('/dashboard', async (req, res, next) => {
     }
 
     // Recent 5 orders
-    const recentOrders = await Order.find()
+    const recentOrders = await Order.find({
+      $or: [
+        { paymentMethod: { $ne: 'razorpay' } },
+        { paymentStatus: 'paid' }
+      ]
+    })
       .populate('user', 'name phone')
       .sort({ createdAt: -1 })
       .limit(5);
@@ -117,6 +130,10 @@ router.get('/revenue', async (req, res, next) => {
     const orders = await Order.find({
       createdAt: { $gte: start, $lte: end },
       orderStatus: { $ne: 'cancelled' },
+      $or: [
+        { paymentMethod: { $ne: 'razorpay' } },
+        { paymentStatus: 'paid' }
+      ]
     });
 
     const categoryRevenue = {};
@@ -156,6 +173,10 @@ router.get('/top-items', async (req, res, next) => {
     const orders = await Order.find({
       createdAt: { $gte: since },
       orderStatus: { $ne: 'cancelled' },
+      $or: [
+        { paymentMethod: { $ne: 'razorpay' } },
+        { paymentStatus: 'paid' }
+      ]
     });
 
     const itemStats = {};

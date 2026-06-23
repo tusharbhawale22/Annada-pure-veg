@@ -165,7 +165,17 @@ router.get('/', protect, adminOnly, async (req, res, next) => {
   try {
     const { page = 1, limit = 20, status, paymentMethod, date, search } = req.query;
 
-    const filter = {};
+    // Filter to exclude unpaid online (razorpay) orders from the admin panel
+    const filter = {
+      $and: [
+        {
+          $or: [
+            { paymentMethod: { $ne: 'razorpay' } },
+            { paymentStatus: 'paid' }
+          ]
+        }
+      ]
+    };
     if (status) filter.orderStatus = status;
     if (paymentMethod) filter.paymentMethod = paymentMethod;
     if (date) {
