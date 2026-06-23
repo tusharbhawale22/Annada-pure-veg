@@ -108,7 +108,7 @@ export default function AdminMenuPage() {
   const items: MenuItem[] = data || [];
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl font-bold text-espresso">Menu Items</h1>
         <button onClick={() => { setEditItem(null); setFormData({ name: '', description: '', price: '', category: 'Morning Booster', preparationTime: '10', sortOrder: '1', isTodaySpecial: 'false' }); setShowForm(true); }}

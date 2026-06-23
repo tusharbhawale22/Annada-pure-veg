@@ -16,7 +16,7 @@ export default function AdminCustomersPage() {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl font-bold text-espresso">Customers</h1>
         <div className="flex items-center gap-2 bg-saffron-50 text-saffron-900 px-3 py-1.5 rounded-xl text-sm font-semibold">

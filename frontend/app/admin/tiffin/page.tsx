@@ -34,7 +34,7 @@ export default function AdminTiffinPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <h1 className="font-display text-2xl font-bold text-espresso mb-6">Tiffin Subscriptions</h1>
 
       <div className="flex gap-2 flex-wrap mb-6">

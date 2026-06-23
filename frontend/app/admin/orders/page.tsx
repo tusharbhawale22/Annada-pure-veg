@@ -158,7 +158,7 @@ export default function AdminOrdersPage() {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
           body * {
@@ -199,14 +199,14 @@ export default function AdminOrdersPage() {
       `}} />
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-        <h1 className="font-display text-2xl font-bold text-espresso">Orders</h1>
+      <div className="flex justify-between items-center mb-5 flex-wrap gap-3">
+        <h1 className="font-display text-xl md:text-2xl font-bold text-espresso">Orders</h1>
         <button
           onClick={() => setShowAddOffline(true)}
-          className="px-4 py-2 bg-leaf text-white hover:bg-leaf-700 rounded-xl font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+          className="px-3 md:px-4 py-2 bg-leaf text-white hover:bg-leaf-700 rounded-xl font-semibold flex items-center gap-1.5 transition-all shadow-sm text-sm"
         >
-          <Plus className="w-4.5 h-4.5" />
-          Add Offline Order
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">Add </span>Offline Order
         </button>
       </div>
 

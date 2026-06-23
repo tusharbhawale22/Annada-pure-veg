@@ -70,17 +70,17 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="font-display text-2xl font-bold text-espresso">Dashboard</h1>
+          <h1 className="font-display text-xl md:text-2xl font-bold text-espresso">Dashboard</h1>
           <p className="text-espresso/60 text-sm mt-0.5">Welcome back! Here's today's summary.</p>
         </div>
 
         {/* Store toggle */}
         <button onClick={handleToggleStore} disabled={toggling}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
+          className={`flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-bold border-2 transition-all ${
             settingsData?.isOpen
               ? 'bg-leaf/10 border-leaf text-leaf hover:bg-leaf/20'
               : 'bg-red-50 border-red-300 text-red-600 hover:bg-red-100'
