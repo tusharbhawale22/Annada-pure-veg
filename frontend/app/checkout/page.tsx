@@ -38,6 +38,13 @@ export default function CheckoutPage() {
   const [couponLoading, setCouponLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notes,   setNotes]   = useState('');
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (payMethod === 'cod') {
+      setPaymentError(null);
+    }
+  }, [payMethod]);
 
   // Clean up any mock items from cart to prevent invalid checkout submission
   useEffect(() => {
@@ -144,6 +151,7 @@ export default function CheckoutPage() {
     }
 
     setLoading(true);
+    setPaymentError(null);
     try {
       // Save new address to profile if checkbox ticked
       if (selectedAddressId === 'new' && saveToProfile && newAddress.line1 && newAddress.area && newAddress.pincode) {
@@ -193,6 +201,7 @@ export default function CheckoutPage() {
             toast.success('Payment successful! Order confirmed 🎉');
             router.push(`/order-confirmation?orderId=${order._id}`);
           } catch {
+            setPaymentError('Payment verification failed. Please try again.');
             toast.error('Payment verification failed. Contact support.');
           }
         },
@@ -205,6 +214,7 @@ export default function CheckoutPage() {
             } catch (err) {
               console.error('Error reporting cancellation:', err);
             }
+            setPaymentError('Payment not done. Please make payment to place the order.');
             toast.error('Payment cancelled. Your order has not been placed.');
           }
         },
@@ -222,6 +232,7 @@ export default function CheckoutPage() {
           return;
         }
       }
+      setPaymentError(errMsg || 'Could not place order');
       toast.error(errMsg || 'Could not place order');
     } finally {
       setLoading(false);
@@ -232,6 +243,16 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-cream pt-20">
       <div className="container-custom py-8">
         <h1 className="font-display text-3xl font-bold text-espresso mb-8">Checkout</h1>
+
+        {paymentError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 mb-6 flex items-start gap-3 shadow-sm max-w-xl animate-fade-in">
+            <span className="text-xl">⚠️</span>
+            <div className="flex-1">
+              <p className="font-bold text-sm">Payment Not Done</p>
+              <p className="text-xs text-red-600 mt-0.5">{paymentError}</p>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left — Form */}
@@ -476,7 +497,7 @@ export default function CheckoutPage() {
               </div>
 
               <button onClick={handlePlaceOrder} disabled={loading} className="btn-primary w-full justify-center py-4 text-base">
-                {loading ? 'Placing Order...' : payMethod === 'cod' ? '🛵 Place Order' : '💳 Pay & Order'}
+                {loading ? 'Placing Order...' : payMethod === 'cod' ? '🛵 Place Order' : '💳 Make Payment'}
               </button>
 
               <p className="text-xs text-center text-espresso/50 mt-3">
