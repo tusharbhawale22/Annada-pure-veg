@@ -82,6 +82,8 @@ export const paymentApi = {
   createOrder: (data: { orderId: string; type: 'order' | 'tiffin' }) =>
     api.post('/payments/create-order', data),
   verify: (data: Record<string, string>) => api.post('/payments/verify', data),
+  cancel: (data: { orderId: string; type: 'order' | 'tiffin' }) =>
+    api.post('/payments/cancel', data),
 };
 
 // Coupons

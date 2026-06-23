@@ -2,22 +2,66 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from 'react-query';
-import { orderApi } from '@/lib/api';
+import { orderApi, paymentApi } from '@/lib/api';
 import OrderStepper from '@/components/OrderStepper';
 import { formatCurrency, formatDateTime, ORDER_STATUS_CONFIG } from '@/lib/utils';
 import Link from 'next/link';
 import { useEffect, useState, Suspense } from 'react';
+import { useAuthStore } from '@/store/authStore';
+import toast from 'react-hot-toast';
+import { AlertCircle, CreditCard } from 'lucide-react';
 
 function OrderConfirmationContent() {
   const params  = useSearchParams();
   const orderId = params.get('orderId');
   const [countdown, setCountdown] = useState(30);
+  const { user } = useAuthStore();
+  const [retrying, setRetrying] = useState(false);
 
   const { data, isLoading, refetch } = useQuery(
     ['order', orderId],
     () => orderApi.getOrder(orderId!).then((r) => r.data.order),
     { enabled: !!orderId, refetchInterval: 30000 }
   );
+
+  const handleRetryPayment = async () => {
+    if (!data) return;
+    setRetrying(true);
+    try {
+      const payRes = await paymentApi.createOrder({ orderId: data._id, type: 'order' });
+      const { razorpayOrder, key } = payRes.data;
+
+      const rzp = new window.Razorpay({
+        key,
+        amount: razorpayOrder.amount,
+        currency: 'INR',
+        name: 'Annada Pure Veg',
+        description: `Order #${data.orderNumber}`,
+        order_id: razorpayOrder.id,
+        handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+          try {
+            await paymentApi.verify({ ...response, orderId: data._id, type: 'order' });
+            toast.success('Payment successful! Order confirmed 🎉');
+            refetch();
+          } catch {
+            toast.error('Payment verification failed.');
+          }
+        },
+        prefill: { name: user?.name, email: user?.email, contact: user?.phone },
+        theme: { color: '#E65100' },
+        modal: {
+          ondismiss: () => {
+            toast.error('Payment not completed.');
+          }
+        }
+      });
+      rzp.open();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to initialize payment');
+    } finally {
+      setRetrying(false);
+    }
+  };
 
   // Countdown to next refresh
   useEffect(() => {
@@ -78,6 +122,29 @@ function OrderConfirmationContent() {
           <span>{statusConfig.icon}</span> {statusConfig.label}
         </div>
 
+        {/* Payment Warning Banner */}
+        {data.paymentMethod === 'razorpay' && data.paymentStatus !== 'paid' && (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-6 mb-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm max-w-xl mx-auto">
+            <div className="flex items-start gap-3 text-left">
+              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-bold text-sm">Payment Not Done</p>
+                <p className="text-xs text-red-600 mt-1">
+                  Your payment was not completed or was cancelled. Please complete payment to confirm your order.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleRetryPayment}
+              disabled={retrying}
+              className="flex items-center justify-center gap-2 bg-red-600 text-white font-bold text-sm px-5 py-3 rounded-xl hover:bg-red-700 active:scale-[0.98] transition-all shadow-md hover:shadow-lg disabled:opacity-60 whitespace-nowrap"
+            >
+              <CreditCard className="w-4 h-4" />
+              {retrying ? 'Loading...' : 'Pay Now'}
+            </button>
+          </div>
+        )}
+
         {/* Order tracker */}
         {data.orderStatus !== 'cancelled' && (
           <div className="card p-6 mb-6">
@@ -104,8 +171,8 @@ function OrderConfirmationContent() {
               <div className="flex justify-between"><span className="text-espresso/60">Order Type</span><span className="font-semibold capitalize">{data.orderType}</span></div>
               <div className="flex justify-between"><span className="text-espresso/60">Payment</span><span className="font-semibold uppercase">{data.paymentMethod}</span></div>
               <div className="flex justify-between"><span className="text-espresso/60">Payment Status</span>
-                <span className={`font-semibold ${data.paymentStatus === 'paid' ? 'text-leaf' : 'text-gold-700'}`}>
-                  {data.paymentStatus.toUpperCase()}
+                <span className={`font-semibold ${data.paymentStatus === 'paid' ? 'text-leaf' : 'text-red-500'}`}>
+                  {data.paymentStatus === 'paid' ? 'PAID' : 'PAYMENT NOT DONE'}
                 </span>
               </div>
             </div>
@@ -148,7 +215,9 @@ function OrderConfirmationContent() {
             <div className="flex justify-between text-espresso/60"><span>Tax (5%)</span><span>{formatCurrency(data.tax)}</span></div>
           </div>
           <div className="flex justify-between items-center mt-3 pt-3 border-t border-warm-200">
-            <span className="font-display font-bold text-espresso">Total Paid</span>
+            <span className="font-display font-bold text-espresso">
+              {data.paymentStatus === 'paid' || data.paymentMethod === 'cod' ? 'Total Paid' : 'Total Amount'}
+            </span>
             <span className="font-display font-bold text-saffron-900 text-xl">{formatCurrency(data.totalAmount)}</span>
           </div>
         </div>
@@ -164,6 +233,7 @@ function OrderConfirmationContent() {
           Need help? WhatsApp us at <strong>+91 98765 43210</strong>
         </p>
       </div>
+      <script src="https://checkout.razorpay.com/v1/checkout.js" async />
     </div>
   );
 }

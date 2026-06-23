@@ -198,7 +198,18 @@ export default function CheckoutPage() {
         },
         prefill: { name: user?.name, email: user?.email, contact: user?.phone },
         theme: { color: '#E65100' },
-        modal: { ondismiss: () => toast('Payment cancelled. Your order is saved.', { icon: 'ℹ️' }) },
+        modal: {
+          ondismiss: async () => {
+            try {
+              await paymentApi.cancel({ orderId: order._id, type: 'order' });
+            } catch (err) {
+              console.error('Error reporting cancellation:', err);
+            }
+            clearCart();
+            toast.error('Payment not done. Your order is saved.');
+            router.push(`/order-confirmation?orderId=${order._id}`);
+          }
+        },
       });
       rzp.open();
 

@@ -1,13 +1,13 @@
 'use client';
 
 import { useQuery } from 'react-query';
-import { tiffinApi } from '@/lib/api';
+import { tiffinApi, paymentApi } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import { RefreshCw, Pause, X } from 'lucide-react';
+import { RefreshCw, Pause, X, CreditCard } from 'lucide-react';
 
 const STATUS_COLORS: Record<string, string> = {
   active:    'text-leaf bg-leaf/10 border-leaf/20',
@@ -25,6 +25,50 @@ export default function MyTiffinPage() {
     () => tiffinApi.mySubscriptions().then((r) => r.data.subscriptions),
     { enabled: isAuthenticated }
   );
+
+  const handleRetryTiffinPayment = async (sub: { _id: string; price: number; planType: string; mealType: string }) => {
+    setUpdating(sub._id + 'retry');
+    try {
+      const payRes = await paymentApi.createOrder({ orderId: sub._id, type: 'tiffin' });
+      const { razorpayOrder, key } = payRes.data;
+
+      if (typeof window !== 'undefined' && (window as any).Razorpay) {
+        const rzp = new (window as any).Razorpay({
+          key,
+          amount: razorpayOrder.amount,
+          currency: 'INR',
+          name: 'Annada Pure Veg',
+          description: `${sub.planType} ${sub.mealType} Plan`,
+          order_id: razorpayOrder.id,
+          handler: async (response: any) => {
+            try {
+              await paymentApi.verify({
+                ...response,
+                orderId: sub._id,
+                type: 'tiffin',
+              });
+              toast.success('Tiffin subscription activated! 🍱');
+              refetch();
+            } catch {
+              toast.error('Payment verification failed.');
+            }
+          },
+          prefill: {},
+          theme: { color: '#E65100' },
+          modal: {
+            ondismiss: () => {
+              toast.error('Payment cancelled.');
+            }
+          }
+        });
+        rzp.open();
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to initialize payment');
+    } finally {
+      setUpdating(null);
+    }
+  };
 
   const handleAction = async (id: string, action: 'pause' | 'resume' | 'cancel') => {
     if (action === 'cancel' && !confirm('Cancel this subscription? This cannot be undone.')) return;
@@ -108,29 +152,44 @@ export default function MyTiffinPage() {
 
                 <div className="space-y-1.5 text-sm text-espresso/70 mb-4">
                   <div className="flex justify-between"><span>Price</span><span className="font-bold text-saffron-900">{formatCurrency(sub.price)}</span></div>
-                  <div className="flex justify-between"><span>Payment</span><span className={`font-semibold ${sub.paymentStatus === 'paid' ? 'text-leaf' : 'text-gold-700'}`}>{sub.paymentStatus.toUpperCase()}</span></div>
+                  <div className="flex justify-between"><span>Payment</span><span className={`font-semibold ${sub.paymentStatus === 'paid' ? 'text-leaf' : 'text-red-500'}`}>{sub.paymentStatus === 'paid' ? 'PAID' : 'PAYMENT NOT DONE'}</span></div>
                   {sub.deliveryAddress && <div className="flex justify-between"><span>Delivery</span><span>{sub.deliveryAddress.line1}, {sub.deliveryAddress.area}</span></div>}
                 </div>
 
                 {/* Actions */}
                 <div className="flex gap-2 flex-wrap">
-                  {sub.status === 'active' && (
-                    <button onClick={() => handleAction(sub._id, 'pause')} disabled={!!updating}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-gold-50 text-gold-700 hover:bg-gold-100 border border-gold-200 transition-all">
-                      <Pause className="w-3.5 h-3.5" /> Pause
-                    </button>
-                  )}
-                  {sub.status === 'paused' && (
-                    <button onClick={() => handleAction(sub._id, 'resume')} disabled={!!updating}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-leaf/10 text-leaf hover:bg-leaf/20 border border-leaf/20 transition-all">
-                      <RefreshCw className="w-3.5 h-3.5" /> Resume
-                    </button>
-                  )}
-                  {sub.status !== 'cancelled' && (
-                    <button onClick={() => handleAction(sub._id, 'cancel')} disabled={!!updating}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-red-50 text-red-500 hover:bg-red-100 border border-red-200 transition-all">
-                      <X className="w-3.5 h-3.5" /> Cancel
-                    </button>
+                  {sub.paymentStatus !== 'paid' ? (
+                    <>
+                      <button onClick={() => handleRetryTiffinPayment(sub)} disabled={!!updating}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition-all shadow-sm">
+                        <CreditCard className="w-3.5 h-3.5" /> Retry Payment
+                      </button>
+                      <button onClick={() => handleAction(sub._id, 'cancel')} disabled={!!updating}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-red-55 text-red-600 hover:bg-red-100 border border-red-200 transition-all">
+                        <X className="w-3.5 h-3.5" /> Cancel / Delete
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {sub.status === 'active' && (
+                        <button onClick={() => handleAction(sub._id, 'pause')} disabled={!!updating}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-gold-50 text-gold-700 hover:bg-gold-100 border border-gold-200 transition-all">
+                          <Pause className="w-3.5 h-3.5" /> Pause
+                        </button>
+                      )}
+                      {sub.status === 'paused' && (
+                        <button onClick={() => handleAction(sub._id, 'resume')} disabled={!!updating}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-leaf/10 text-leaf hover:bg-leaf/20 border border-leaf/20 transition-all">
+                          <RefreshCw className="w-3.5 h-3.5" /> Resume
+                        </button>
+                      )}
+                      {sub.status !== 'cancelled' && (
+                        <button onClick={() => handleAction(sub._id, 'cancel')} disabled={!!updating}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-red-50 text-red-500 hover:bg-red-100 border border-red-200 transition-all">
+                          <X className="w-3.5 h-3.5" /> Cancel
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -138,6 +197,7 @@ export default function MyTiffinPage() {
           </div>
         )}
       </div>
+      <script src="https://checkout.razorpay.com/v1/checkout.js" async />
     </div>
   );
 }

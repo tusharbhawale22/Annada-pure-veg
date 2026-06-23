@@ -122,4 +122,39 @@ router.post('/verify', protect, async (req, res, next) => {
   }
 });
 
+// ── POST /api/payments/cancel ──────────────────────────────
+router.post('/cancel', protect, async (req, res, next) => {
+  try {
+    const { orderId, type = 'order' } = req.body;
+
+    if (type === 'order') {
+      const order = await Order.findByIdAndUpdate(
+        orderId,
+        { paymentStatus: 'failed' },
+        { new: true }
+      );
+      if (order) {
+        // Only append to history if it doesn't already have a cancelled entry to prevent duplicate logs
+        const hasCancelHistory = order.statusHistory.some(h => h.note === 'Payment cancelled by user');
+        if (!hasCancelHistory) {
+          order.statusHistory.push({ status: 'placed', note: 'Payment cancelled by user' });
+          await order.save();
+        }
+      }
+    } else {
+      await TiffinSubscription.findByIdAndUpdate(orderId, {
+        paymentStatus: 'failed',
+        status: 'cancelled',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Payment cancelled and marked as failed.',
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

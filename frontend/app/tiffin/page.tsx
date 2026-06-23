@@ -106,6 +106,17 @@ export default function TiffinPage() {
           },
           prefill: {},
           theme: { color: '#E65100' },
+          modal: {
+            ondismiss: async () => {
+              try {
+                await paymentApi.cancel({ orderId: subscription._id, type: 'tiffin' });
+              } catch (err) {
+                console.error('Error reporting cancellation:', err);
+              }
+              toast.error('Payment not done. Subscription saved.');
+              router.push('/profile/tiffin');
+            }
+          }
         });
         rzp.open();
       }
