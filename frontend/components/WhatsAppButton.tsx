@@ -16,10 +16,10 @@ export default function WhatsAppButton() {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted || !pathname) return null;
 
-  const normalizedPath = pathname?.toLowerCase() || '';
-  if (normalizedPath.startsWith('/admin') || normalizedPath.startsWith('/auth')) {
+  const normalizedPath = pathname.toLowerCase();
+  if (normalizedPath.includes('/admin') || normalizedPath.includes('/auth')) {
     return null;
   }
 

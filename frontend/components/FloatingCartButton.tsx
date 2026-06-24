@@ -16,14 +16,14 @@ export default function FloatingCartButton() {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted || !pathname) return null;
 
-  const normalizedPath = pathname?.toLowerCase() || '';
+  const normalizedPath = pathname.toLowerCase();
 
   // Hide on admin, auth, checkout pages
   if (
-    normalizedPath.startsWith('/admin') ||
-    normalizedPath.startsWith('/auth') ||
+    normalizedPath.includes('/admin') ||
+    normalizedPath.includes('/auth') ||
     normalizedPath.startsWith('/checkout') ||
     totalItems === 0 ||
     isOpen
