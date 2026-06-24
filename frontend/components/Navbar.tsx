@@ -128,7 +128,7 @@ export default function Navbar() {
                 <Search className="w-4 h-4 text-white/70 absolute left-3" />
               </form>
             )}
-            <div className="flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-1 gap-1">
+            <div className="hidden md:flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-1 gap-1">
               {/* Cart Button — only show when authenticated */}
               {isAuthenticated && (
                 <button
