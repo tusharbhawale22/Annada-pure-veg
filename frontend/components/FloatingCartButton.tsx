@@ -4,17 +4,27 @@ import { ShoppingCart } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useState, useEffect } from 'react';
 
 export default function FloatingCartButton() {
   const pathname = usePathname();
   const { getTotalItems, toggleCart, isOpen } = useCartStore();
   const totalItems = getTotalItems();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  const normalizedPath = pathname?.toLowerCase() || '';
 
   // Hide on admin, auth, checkout pages
   if (
-    pathname?.startsWith('/admin') ||
-    pathname?.startsWith('/auth') ||
-    pathname?.startsWith('/checkout') ||
+    normalizedPath.startsWith('/admin') ||
+    normalizedPath.startsWith('/auth') ||
+    normalizedPath.startsWith('/checkout') ||
     totalItems === 0 ||
     isOpen
   ) return null;

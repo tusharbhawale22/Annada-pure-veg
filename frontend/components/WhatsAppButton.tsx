@@ -3,13 +3,25 @@
 import { getWhatsAppLink } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { MessageCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const WHATSAPP_NUMBER = '919876543210'; // Replace with real number
 const MESSAGE = "Hello! I'd like to place an order or know more about Annada Pure Veg 🌿";
 
 export default function WhatsAppButton() {
   const pathname = usePathname();
-  if (pathname?.startsWith('/admin')) return null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  const normalizedPath = pathname?.toLowerCase() || '';
+  if (normalizedPath.startsWith('/admin') || normalizedPath.startsWith('/auth')) {
+    return null;
+  }
 
   return (
     <a
