@@ -193,42 +193,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         'min-h-screen bg-cream',
         'md:ml-64',             // desktop: offset for sidebar
         'pt-14 md:pt-0',        // mobile: offset for top header
-        'pb-20 md:pb-0',        // mobile: offset for bottom tab bar
       )}>
         {children}
       </main>
-
-      {/* ── Mobile Bottom Tab Bar ───────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-espresso border-t border-white/10 flex items-center justify-around px-2 h-16 safe-area-pb">
-        {bottomTabs.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all min-w-[56px]',
-                active ? 'text-[#FF6B1A]' : 'text-white/40 hover:text-white/70'
-              )}
-            >
-              <Icon className={cn('w-5 h-5', active && 'drop-shadow-[0_0_6px_rgba(255,107,26,0.6)]')} />
-              <span className="text-[10px] font-semibold leading-tight">{item.label}</span>
-              {active && (
-                <span className="w-1 h-1 rounded-full bg-[#FF6B1A] mt-0.5" />
-              )}
-            </Link>
-          );
-        })}
-        {/* More button opens drawer */}
-        <button
-          onClick={() => setDrawerOpen(true)}
-          className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-white/40 hover:text-white/70 transition-all min-w-[56px]"
-        >
-          <Menu className="w-5 h-5" />
-          <span className="text-[10px] font-semibold leading-tight">More</span>
-        </button>
-      </nav>
     </div>
   );
 }
