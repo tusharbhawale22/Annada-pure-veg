@@ -222,3 +222,12 @@
 /* ── Toast custom styles ─────────────────────────────────── */
 .toast-success { background: var(--leaf) !important; }
 .toast-error   { background: #c0392b !important; }
+
+/* ── Hide scrollbars utility ────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

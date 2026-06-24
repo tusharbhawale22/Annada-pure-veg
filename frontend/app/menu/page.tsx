@@ -6,8 +6,11 @@ import { Search, LayoutGrid, List, SlidersHorizontal, X } from 'lucide-react';
 import { menuApi } from '@/lib/api';
 import MenuCard from '@/components/MenuCard';
 import { SkeletonList } from '@/components/SkeletonCard';
-import { debounce, cn } from '@/lib/utils';
+import { debounce, cn, formatCurrency } from '@/lib/utils';
 import MenuSidebar from '@/components/MenuSidebar';
+import Image from 'next/image';
+import { useCartStore } from '@/store/cartStore';
+import toast from 'react-hot-toast';
 
 const CATEGORIES = ['All', 'Morning Booster', 'Healthy Tummy', 'Yummy Bites', 'Wrap', 'Pizza', 'Maggi'];
 
@@ -21,6 +24,20 @@ export default function MenuPage() {
   const [category, setCategory] = useState('All');
   const [layout,   setLayout]   = useState<'grid' | 'list'>('grid');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  const { addItem } = useCartStore();
+
+  const handleAddSpecial = (item: any) => {
+    if (!item.isAvailable) return;
+    addItem({
+      _id: item._id,
+      name: item.name,
+      price: item.price,
+      imageUrl: item.imageUrl,
+      category: item.category,
+    });
+    toast.success(`${item.name} added to cart! 🛒`, { duration: 1500 });
+  };
 
   const debouncedSetSearch = useMemo(
     () => debounce((v: unknown) => setDebouncedSearch(v as string), 400),
@@ -144,6 +161,50 @@ export default function MenuPage() {
                 {/* Menu Layout */}
                 {category === 'All' && !debouncedSearch ? (
                   <div className="flex flex-col gap-12 pb-10">
+                    {/* Today's Specials (Mobile Only) */}
+                    {specials.length > 0 && (
+                      <div className="lg:hidden bg-gradient-to-br from-[#E65100] to-[#C84B00] text-white rounded-3xl p-5 shadow-warm-lg mb-2 relative overflow-hidden">
+                        {/* Decorative subtle background pattern */}
+                        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+                        
+                        <div className="relative z-10">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FFD700] text-[#3D1000] text-xs font-bold rounded-full mb-4 shadow-sm">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
+                            Our Special Dishes! 🌟
+                          </div>
+                          
+                          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+                            {specials.map((item: any) => (
+                              <div 
+                                key={item._id} 
+                                onClick={() => handleAddSpecial(item)}
+                                className="relative flex-shrink-0 w-40 snap-start group rounded-2xl overflow-hidden border border-white/20 bg-white/5 backdrop-blur-sm p-4 flex flex-col items-center hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
+                              >
+                                {/* Decorative corners */}
+                                <div className="absolute top-2 left-2 w-3 h-3 border-t border-l border-white/30 rounded-tl-sm" />
+                                <div className="absolute top-2 right-2 w-3 h-3 border-t border-r border-white/30 rounded-tr-sm" />
+                                <div className="absolute bottom-2 left-2 w-3 h-3 border-b border-l border-white/30 rounded-bl-sm" />
+                                <div className="absolute bottom-2 right-2 w-3 h-3 border-b border-r border-white/30 rounded-br-sm" />
+                                
+                                <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg border-2 border-white/20 mb-2.5 bg-white/10">
+                                  {item.imageUrl ? (
+                                    <Image src={item.imageUrl} alt={item.name} width={80} height={80} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500" />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-2xl">🍽️</div>
+                                  )}
+                                </div>
+                                
+                                <h4 className="font-display font-semibold text-xs text-center mb-1 line-clamp-1 w-full">{item.name}</h4>
+                                <p className="text-[#FFD700] font-bold text-xs">{formatCurrency(item.price)}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     {CATEGORIES.filter(c => c !== 'All').map(cat => {
                       const catItems = items.filter((i: any) => i.category === cat);
                       if (catItems.length === 0) return null;
