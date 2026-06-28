@@ -9,6 +9,7 @@ import { TrendingUp, ShoppingBag, Users, UtensilsCrossed, ToggleLeft, ToggleRigh
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import { settingsApi as sApi } from '@/lib/api';
+import Link from 'next/link';
 
 export default function AdminDashboard() {
   const [toggling, setToggling] = useState(false);
@@ -135,7 +136,7 @@ export default function AdminDashboard() {
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display font-semibold text-espresso">Recent Orders</h2>
-            <a href="/admin/orders" className="text-xs text-saffron-900 font-semibold hover:underline">View all →</a>
+            <Link href="/admin/orders" className="text-xs text-saffron-900 font-semibold hover:underline">View all →</Link>
           </div>
           <div className="space-y-3">
             {(recentOrdersData?.orders ?? []).slice(0, 6).map((order: {

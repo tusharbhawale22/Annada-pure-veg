@@ -75,6 +75,8 @@ export const orderApi = {
   getAllOrders: (params?: Record<string, string>) => api.get('/orders', { params }),
   updateStatus: (id: string, status: string, note?: string) =>
     api.patch(`/orders/${id}/status`, { status, note }),
+  updatePaymentStatus: (id: string, paymentStatus: string) =>
+    api.patch(`/orders/${id}/payment-status`, { paymentStatus }),
 };
 
 // Payments

@@ -264,6 +264,14 @@ router.patch('/:id/status', protect, adminOnly, async (req, res, next) => {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ success: false, message: 'Order not found.' });
 
+    // Block status change if razorpay payment is not completed (except cancellation)
+    if (order.paymentMethod === 'razorpay' && order.paymentStatus !== 'paid' && status !== 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot update order status — Razorpay payment has not been completed.',
+      });
+    }
+
     order.orderStatus = status;
     order.statusHistory.push({ status, note: note || '' });
 
@@ -275,6 +283,40 @@ router.patch('/:id/status', protect, adminOnly, async (req, res, next) => {
     await order.save();
 
     res.json({ success: true, message: `Order status updated to "${status}".`, order });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── PATCH /api/orders/:id/payment-status (Admin Only) ─────
+// Allows admin to manually correct payment status for an order
+router.patch('/:id/payment-status', protect, adminOnly, async (req, res, next) => {
+  try {
+    const { paymentStatus } = req.body;
+
+    const validStatuses = ['pending', 'paid', 'failed', 'refunded'];
+    if (!validStatuses.includes(paymentStatus)) {
+      return res.status(400).json({ success: false, message: 'Invalid payment status.' });
+    }
+
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found.' });
+
+    order.paymentStatus = paymentStatus;
+
+    // If marking as paid and order is still 'placed', move to 'confirmed'
+    if (paymentStatus === 'paid' && order.orderStatus === 'placed') {
+      order.orderStatus = 'confirmed';
+      order.statusHistory.push({ status: 'confirmed', note: 'Payment manually confirmed by admin' });
+    }
+
+    await order.save();
+
+    res.json({
+      success: true,
+      message: `Payment status updated to "${paymentStatus}".`,
+      order,
+    });
   } catch (err) {
     next(err);
   }

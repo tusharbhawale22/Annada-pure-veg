@@ -5,7 +5,7 @@ import { useQuery } from 'react-query';
 import { orderApi, menuApi } from '@/lib/api';
 import { formatCurrency, formatDateTime, ORDER_STATUS_CONFIG } from '@/lib/utils';
 import toast from 'react-hot-toast';
-import { Search, ChevronDown, Plus, Minus, X, Printer } from 'lucide-react';
+import { Search, ChevronDown, Plus, Minus, X, Printer, Eye, MapPin, CreditCard, User, Phone, Package, CheckCircle } from 'lucide-react';
 
 const STATUS_OPTIONS = ['all', 'placed', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
 
@@ -17,7 +17,9 @@ export default function AdminOrdersPage() {
   // Modals visibility
   const [showAddOffline, setShowAddOffline] = useState(false);
   const [showInvoice, setShowInvoice]       = useState(false);
+  const [showOrderDetail, setShowOrderDetail] = useState(false);
   const [selectedOrder, setSelectedOrder]   = useState<any | null>(null);
+  const [markingPaid, setMarkingPaid]       = useState(false);
 
   // Offline Order Form State
   const [offlineCart, setOfflineCart] = useState<any[]>([]);
@@ -53,7 +55,12 @@ export default function AdminOrdersPage() {
   const orders = data?.orders ?? [];
   const menuItems = menuData?.items ?? [];
 
-  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+  const handleStatusUpdate = async (orderId: string, newStatus: string, order?: any) => {
+    // Block status change if razorpay payment is not done
+    if (order && order.paymentMethod === 'razorpay' && order.paymentStatus !== 'paid') {
+      toast.error('❌ Cannot update status — payment not completed yet!');
+      return;
+    }
     setUpdating(orderId);
     try {
       await orderApi.updateStatus(orderId, newStatus);
@@ -63,6 +70,26 @@ export default function AdminOrdersPage() {
       toast.error(err instanceof Error ? err.message : 'Update failed');
     } finally {
       setUpdating(null);
+    }
+  };
+
+  const handleUpdatePaymentStatus = async (orderId: string, newPaymentStatus: string) => {
+    setMarkingPaid(true);
+    try {
+      await orderApi.updatePaymentStatus(orderId, newPaymentStatus);
+      toast.success(`Payment status updated to ${newPaymentStatus} ✅`);
+      refetch();
+      if (selectedOrder?._id === orderId) {
+        setSelectedOrder((prev: any) => prev ? {
+          ...prev,
+          paymentStatus: newPaymentStatus,
+          orderStatus: newPaymentStatus === 'paid' && prev.orderStatus === 'placed' ? 'confirmed' : prev.orderStatus
+        } : prev);
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update payment status');
+    } finally {
+      setMarkingPaid(false);
     }
   };
 
@@ -265,7 +292,14 @@ export default function AdminOrdersPage() {
             const displayCustomerPhone = order.isOffline ? order.customerPhone : (order.user?.phone || '');
 
             return (
-              <div key={order._id} className="card p-4 flex flex-wrap items-center gap-4">
+              <div
+                key={order._id}
+                className="card p-4 flex flex-wrap items-center gap-4 cursor-pointer hover:border-saffron-300 hover:shadow-md transition-all"
+                onClick={() => {
+                  setSelectedOrder(order);
+                  setShowOrderDetail(true);
+                }}
+              >
                 <div className="text-2xl">{sc?.icon}</div>
 
                 <div className="flex-1 min-w-0">
@@ -285,7 +319,7 @@ export default function AdminOrdersPage() {
                   </p>
                 </div>
 
-                <div className="text-right flex items-center gap-4">
+                <div className="text-right flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
                   <div>
                     <p className="font-bold text-saffron-900">{formatCurrency(order.totalAmount)}</p>
                     <p className={`text-xs font-semibold ${order.paymentStatus === 'paid' ? 'text-leaf' : 'text-gold-700'}`}>
@@ -294,7 +328,8 @@ export default function AdminOrdersPage() {
                   </div>
                   
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedOrder(order);
                       setShowInvoice(true);
                     }}
@@ -307,10 +342,10 @@ export default function AdminOrdersPage() {
 
                 {/* Status updater */}
                 {order.orderStatus !== 'delivered' && order.orderStatus !== 'cancelled' && (
-                  <div className="relative">
+                  <div className="relative" onClick={(e) => e.stopPropagation()}>
                     <select
                       value={order.orderStatus}
-                      onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
+                      onChange={(e) => handleStatusUpdate(order._id, e.target.value, order)}
                       disabled={updating === order._id}
                       className="appearance-none pr-7 pl-3 py-2 rounded-xl border-2 border-warm-200 text-sm font-semibold text-espresso bg-white hover:border-saffron-300 focus:outline-none focus:border-saffron-900 transition-all cursor-pointer disabled:opacity-60"
                     >
@@ -330,6 +365,205 @@ export default function AdminOrdersPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Order Detail Modal */}
+      {showOrderDetail && selectedOrder && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => { setShowOrderDetail(false); setSelectedOrder(null); }}>
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex justify-between items-center p-5 border-b border-warm-200 sticky top-0 bg-white rounded-t-2xl z-10">
+              <div>
+                <h3 className="font-display font-bold text-lg text-espresso">Order #{selectedOrder.orderNumber}</h3>
+                <p className="text-xs text-espresso/50 mt-0.5">{formatDateTime(selectedOrder.createdAt)}</p>
+              </div>
+              <button onClick={() => { setShowOrderDetail(false); setSelectedOrder(null); }} className="p-1.5 rounded-full hover:bg-warm-100 transition-colors">
+                <X className="w-5 h-5 text-espresso/50" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-5">
+              {/* Payment warning banner */}
+              {selectedOrder.paymentMethod === 'razorpay' && selectedOrder.paymentStatus !== 'paid' && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-bold text-red-700 text-sm">⚠️ Payment Not Completed</p>
+                    <p className="text-xs text-red-600 mt-1">This Razorpay order has not been paid. Order status cannot be changed until payment is confirmed.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Status & Type */}
+              <div className="flex flex-wrap gap-2">
+                {(() => { const sc = ORDER_STATUS_CONFIG[selectedOrder.orderStatus]; return (
+                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${sc?.color}`}>{sc?.icon} {sc?.label}</span>
+                ); })()}
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-warm-100 text-espresso/70 capitalize">{selectedOrder.orderType}</span>
+                {selectedOrder.isOffline && <span className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-100 text-purple-700">Offline Order</span>}
+              </div>
+
+              {/* Customer Info */}
+              <div className="bg-ivory rounded-xl p-4 space-y-2">
+                <h4 className="font-bold text-espresso text-sm flex items-center gap-2 mb-3">
+                  <User className="w-4 h-4 text-saffron-900" /> Customer Details
+                </h4>
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="w-3.5 h-3.5 text-espresso/40" />
+                  <span className="font-semibold text-espresso">
+                    {selectedOrder.isOffline ? selectedOrder.customerName : (selectedOrder.user?.name || 'Walk-in Customer')}
+                  </span>
+                </div>
+                {(selectedOrder.isOffline ? selectedOrder.customerPhone : selectedOrder.user?.phone) && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="w-3.5 h-3.5 text-espresso/40" />
+                    <span className="text-espresso/70">
+                      {selectedOrder.isOffline ? selectedOrder.customerPhone : selectedOrder.user?.phone}
+                    </span>
+                  </div>
+                )}
+                {selectedOrder.user?.email && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-espresso/40">✉</span>
+                    <span className="text-espresso/60">{selectedOrder.user.email}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Delivery Address */}
+              {selectedOrder.orderType === 'delivery' && selectedOrder.deliveryAddress && (
+                <div className="bg-blue-50 rounded-xl p-4">
+                  <h4 className="font-bold text-espresso text-sm flex items-center gap-2 mb-2">
+                    <MapPin className="w-4 h-4 text-blue-500" /> Delivery Address
+                  </h4>
+                  <p className="text-sm text-espresso/80 leading-relaxed">
+                    {selectedOrder.deliveryAddress.line1}<br />
+                    {selectedOrder.deliveryAddress.area} — {selectedOrder.deliveryAddress.pincode}
+                    {selectedOrder.deliveryAddress.landmark && <><br /><span className="text-espresso/50">{selectedOrder.deliveryAddress.landmark}</span></>}
+                  </p>
+                </div>
+              )}
+
+              {/* Items Ordered */}
+              <div>
+                <h4 className="font-bold text-espresso text-sm flex items-center gap-2 mb-3">
+                  <Package className="w-4 h-4 text-saffron-900" /> Items Ordered
+                </h4>
+                <div className="space-y-2">
+                  {selectedOrder.items.map((item: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between bg-ivory rounded-lg p-3">
+                      <div>
+                        <p className="font-semibold text-espresso text-sm">{item.name}</p>
+                        <p className="text-xs text-espresso/50">{formatCurrency(item.price)} each</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-espresso/50">×{item.quantity}</p>
+                        <p className="font-bold text-saffron-900 text-sm">{formatCurrency(item.price * item.quantity)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price Summary */}
+              <div className="bg-warm-50 rounded-xl p-4 space-y-1.5 text-sm border border-warm-200">
+                <div className="flex justify-between text-espresso/60">
+                  <span>Subtotal</span><span>{formatCurrency(selectedOrder.subtotal)}</span>
+                </div>
+                {selectedOrder.deliveryFee > 0 && (
+                  <div className="flex justify-between text-espresso/60">
+                    <span>Delivery Fee</span><span>{formatCurrency(selectedOrder.deliveryFee)}</span>
+                  </div>
+                )}
+                {selectedOrder.discount > 0 && (
+                  <div className="flex justify-between text-leaf font-semibold">
+                    <span>Discount</span><span>-{formatCurrency(selectedOrder.discount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-espresso/60">
+                  <span>GST (5%)</span><span>{formatCurrency(selectedOrder.tax)}</span>
+                </div>
+                <div className="flex justify-between font-black text-espresso border-t border-dashed border-warm-300 pt-2 mt-1">
+                  <span>TOTAL</span>
+                  <span className="text-saffron-900">{formatCurrency(selectedOrder.totalAmount)}</span>
+                </div>
+              </div>
+
+              {/* Payment Info */}
+              <div className="bg-ivory rounded-xl p-4">
+                <h4 className="font-bold text-espresso text-sm flex items-center gap-2 mb-3">
+                  <CreditCard className="w-4 h-4 text-saffron-900" /> Payment
+                </h4>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-espresso/50">Method</p>
+                    <p className="font-bold text-espresso uppercase">{selectedOrder.paymentMethod}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-espresso/50">Status</p>
+                    <span className={`font-bold text-sm ${
+                      selectedOrder.paymentStatus === 'paid' ? 'text-leaf' :
+                      selectedOrder.paymentStatus === 'failed' ? 'text-red-600' :
+                      'text-gold-700'
+                    }`}>
+                      {selectedOrder.paymentStatus === 'paid' ? '✅ PAID' :
+                       selectedOrder.paymentStatus === 'failed' ? '❌ FAILED' :
+                       '⏳ PENDING'}
+                    </span>
+                  </div>
+                </div>
+                {selectedOrder.notes && (
+                  <div className="mt-3 pt-3 border-t border-warm-200">
+                    <p className="text-xs text-espresso/50 mb-1">Special Notes</p>
+                    <p className="text-sm text-espresso/80 italic">"{selectedOrder.notes}"</p>
+                  </div>
+                )}
+                {/* Admin payment status correction */}
+                <div className="mt-3 pt-3 border-t border-warm-200">
+                  <p className="text-xs text-espresso/50 mb-2 font-semibold uppercase tracking-wide">Admin: Fix Payment Status</p>
+                  <div className="flex gap-2">
+                    {selectedOrder.paymentStatus !== 'paid' && (
+                      <button
+                        onClick={() => handleUpdatePaymentStatus(selectedOrder._id, 'paid')}
+                        disabled={markingPaid}
+                        className="flex-1 px-3 py-2 bg-leaf/10 hover:bg-leaf/20 text-leaf border border-leaf/30 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
+                      >
+                        {markingPaid ? 'Updating...' : '✅ Mark as PAID'}
+                      </button>
+                    )}
+                    {selectedOrder.paymentStatus !== 'pending' && (
+                      <button
+                        onClick={() => handleUpdatePaymentStatus(selectedOrder._id, 'pending')}
+                        disabled={markingPaid}
+                        className="flex-1 px-3 py-2 bg-gold-50 hover:bg-gold-100 text-gold-700 border border-gold-300 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
+                      >
+                        {markingPaid ? 'Updating...' : '⏳ Mark as PENDING'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="flex gap-3 p-5 border-t border-warm-200 sticky bottom-0 bg-white rounded-b-2xl">
+              <button
+                onClick={() => {
+                  setShowOrderDetail(false);
+                  setShowInvoice(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2.5 border border-warm-300 hover:bg-warm-100 rounded-xl text-espresso font-semibold text-sm transition-all"
+              >
+                <Printer className="w-4 h-4" /> Print
+              </button>
+              <button
+                onClick={() => { setShowOrderDetail(false); setSelectedOrder(null); }}
+                className="flex-1 px-4 py-2.5 bg-espresso hover:bg-espresso/90 text-white rounded-xl font-bold text-sm transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
