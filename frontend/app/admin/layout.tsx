@@ -31,15 +31,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router   = useRouter();
   const { user, isAuthenticated, clearUser } = useAuthStore();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // hasHydrated prevents redirect before Zustand reads from localStorage
+  const [hasHydrated, setHasHydrated] = useState(false);
 
-  // Redirect non-admins
   useEffect(() => {
+    // Mark hydration complete after first render (localStorage has been read)
+    setHasHydrated(true);
+  }, []);
+
+  // Redirect non-admins — only after store has hydrated from localStorage
+  useEffect(() => {
+    if (!hasHydrated) return;
     if (!isAuthenticated) { router.push('/auth/login?redirect=/admin'); return; }
     if (user?.role !== 'admin') { router.push('/'); toast.error('Admin access required.'); }
-  }, [isAuthenticated, user, router]);
+  }, [hasHydrated, isAuthenticated, user, router]);
 
   // Close drawer on route change
   useEffect(() => { setDrawerOpen(false); }, [pathname]);
+
+  // Show a loading spinner while hydrating to avoid flash
+  if (!hasHydrated) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-saffron-900 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated || user?.role !== 'admin') return null;
 
