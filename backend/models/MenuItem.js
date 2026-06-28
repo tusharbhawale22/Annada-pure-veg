@@ -6,6 +6,9 @@
 const mongoose = require('mongoose');
 
 const CATEGORIES = [
+  "Today's Menu",
+  'Special Dishes',
+  'Best Dishes',
   'Morning Booster',
   'Healthy Tummy',
   'Yummy Bites',
@@ -13,8 +16,6 @@ const CATEGORIES = [
   'Pizza',
   'Maggi',
   'Tiffin',
-  'Special Dishes',
-  "Today's Menu",
   'Others',
 ];
 
