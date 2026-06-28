@@ -245,7 +245,7 @@ export default function TiffinPage() {
 
             {/* ── Plan Cards ── */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {plans.map((plan: { id: string; name: string; planType: string; mealType: string; price: number; description: string; numberOfDays?: number; deliveryTime?: string }) => {
+              {plans.filter((p: any) => p.isAvailable !== false).map((plan: { id: string; name: string; planType: string; mealType: string; price: number; description: string; numberOfDays?: number; deliveryTime?: string; foodItems?: string; isAvailable?: boolean }) => {
                 const isPopular = plan.planType === 'monthly';
 
                 return (
@@ -288,7 +288,7 @@ export default function TiffinPage() {
                       )}
                       <li className="flex items-center gap-2 text-sm text-[#5C3317]">
                         <Check className="w-4 h-4 text-[#E65100] flex-shrink-0" />
-                        Dal + Sabzi + Roti + Rice
+                        {plan.foodItems || 'Dal + Sabzi + Roti + Rice'}
                       </li>
                       <li className="flex items-center gap-2 text-sm text-[#5C3317]">
                         <Check className="w-4 h-4 text-[#E65100] flex-shrink-0" />

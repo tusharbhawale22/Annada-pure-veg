@@ -17,6 +17,8 @@ interface TiffinPlan {
   description: string;
   numberOfDays: number;
   deliveryTime: string;
+  foodItems: string;
+  isAvailable: boolean;
 }
 
 export default function AdminSettingsPage() {
@@ -168,7 +170,22 @@ export default function AdminSettingsPage() {
               <div key={plan.id} className="border border-warm-200 p-4 rounded-xl space-y-3 bg-[#FFFDFB]">
                 <div className="flex items-center justify-between border-b border-warm-100 pb-2">
                   <span className="font-bold text-espresso text-sm capitalize">{plan.name} Plan</span>
-                  <span className="text-xs bg-saffron-100 text-saffron-900 px-2 py-0.5 rounded font-medium uppercase">{plan.planType}</span>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        className="w-3.5 h-3.5 text-[#E65100] border-warm-300 rounded focus:ring-[#E65100]"
+                        checked={plan.isAvailable !== false} 
+                        onChange={(e) => {
+                          const updated = [...form.tiffinPlans];
+                          updated[index] = { ...plan, isAvailable: e.target.checked };
+                          setForm({ ...form, tiffinPlans: updated });
+                        }} 
+                      />
+                      <span className="text-xs font-semibold text-espresso">Available</span>
+                    </label>
+                    <span className="text-xs bg-saffron-100 text-saffron-900 px-2 py-0.5 rounded font-medium uppercase">{plan.planType}</span>
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
@@ -213,18 +230,34 @@ export default function AdminSettingsPage() {
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="input-label">Description</label>
-                  <input 
-                    type="text" 
-                    className="input" 
-                    value={plan.description || ''} 
-                    onChange={(e) => {
-                      const updated = [...form.tiffinPlans];
-                      updated[index] = { ...plan, description: e.target.value };
-                      setForm({ ...form, tiffinPlans: updated });
-                    }} 
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="input-label">Description</label>
+                    <input 
+                      type="text" 
+                      className="input" 
+                      value={plan.description || ''} 
+                      onChange={(e) => {
+                        const updated = [...form.tiffinPlans];
+                        updated[index] = { ...plan, description: e.target.value };
+                        setForm({ ...form, tiffinPlans: updated });
+                      }} 
+                    />
+                  </div>
+                  <div>
+                    <label className="input-label">Food Items in Tiffin</label>
+                    <input 
+                      type="text" 
+                      className="input" 
+                      placeholder="e.g. Dal + Sabzi + Roti + Rice"
+                      value={plan.foodItems || ''} 
+                      onChange={(e) => {
+                        const updated = [...form.tiffinPlans];
+                        updated[index] = { ...plan, foodItems: e.target.value };
+                        setForm({ ...form, tiffinPlans: updated });
+                      }} 
+                    />
+                  </div>
                 </div>
               </div>
             ))}
