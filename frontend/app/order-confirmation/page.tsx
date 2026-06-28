@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from 'react-query';
-import { orderApi, paymentApi } from '@/lib/api';
+import { orderApi, paymentApi, settingsApi } from '@/lib/api';
 import OrderStepper from '@/components/OrderStepper';
 import { formatCurrency, formatDateTime, ORDER_STATUS_CONFIG } from '@/lib/utils';
 import Link from 'next/link';
@@ -23,6 +23,9 @@ function OrderConfirmationContent() {
     () => orderApi.getOrder(orderId!).then((r) => r.data.order),
     { enabled: !!orderId, refetchInterval: 30000 }
   );
+
+  const { data: settingsData } = useQuery('store-settings', () => settingsApi.get().then(r => r.data));
+  const settings = settingsData?.settings || {};
 
   const handleRetryPayment = async () => {
     if (!data) return;
@@ -180,8 +183,14 @@ function OrderConfirmationContent() {
               <div className="flex justify-between"><span className="text-espresso/60">Order Type</span><span className="font-semibold capitalize">{data.orderType}</span></div>
               <div className="flex justify-between"><span className="text-espresso/60">Payment</span><span className="font-semibold uppercase">{data.paymentMethod}</span></div>
               <div className="flex justify-between"><span className="text-espresso/60">Payment Status</span>
-                <span className={`font-semibold ${data.paymentStatus === 'paid' ? 'text-leaf' : 'text-red-500'}`}>
-                  {data.paymentStatus === 'paid' ? 'PAID' : 'PAYMENT NOT DONE'}
+                <span className={`font-semibold ${
+                  data.paymentStatus === 'paid' ? 'text-leaf' :
+                  data.paymentMethod === 'cod' ? 'text-gold-700' :
+                  'text-red-500'
+                }`}>
+                  {data.paymentStatus === 'paid' ? '✅ PAID' :
+                   data.paymentMethod === 'cod' ? '💵 Pay on Delivery' :
+                   '❌ PAYMENT NOT DONE'}
                 </span>
               </div>
             </div>
@@ -225,7 +234,9 @@ function OrderConfirmationContent() {
           </div>
           <div className="flex justify-between items-center mt-3 pt-3 border-t border-warm-200">
             <span className="font-display font-bold text-espresso">
-              {data.paymentStatus === 'paid' || data.paymentMethod === 'cod' ? 'Total Paid' : 'Total Amount'}
+              {data.paymentStatus === 'paid' ? 'Total Paid' :
+               data.paymentMethod === 'cod' ? 'Total (Pay on Delivery)' :
+               'Total Amount'}
             </span>
             <span className="font-display font-bold text-saffron-900 text-xl">{formatCurrency(data.totalAmount)}</span>
           </div>
@@ -239,7 +250,7 @@ function OrderConfirmationContent() {
         </div>
 
         <p className="text-center text-xs text-espresso/50 mt-6">
-          Need help? WhatsApp us at <strong>+91 98765 43210</strong>
+          Need help? WhatsApp us at <strong>{settings.phone || '+91 9763216146'}</strong>
         </p>
       </div>
       <script src="https://checkout.razorpay.com/v1/checkout.js" async />

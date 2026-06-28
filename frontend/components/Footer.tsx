@@ -3,10 +3,15 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Leaf, Phone, MapPin, Clock, Instagram, Facebook } from 'lucide-react';
+import { useQuery } from 'react-query';
+import { settingsApi } from '@/lib/api';
 
 export default function Footer() {
   const pathname = usePathname();
   const currentYear = new Date().getFullYear();
+
+  const { data: settingsData } = useQuery('store-settings', () => settingsApi.get().then(r => r.data));
+  const settings = settingsData?.settings || {};
 
   // Hide footer on admin pages
   if (pathname?.startsWith('/admin')) return null;
@@ -85,15 +90,14 @@ export default function Footer() {
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-saffron-400 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-warm-300 leading-relaxed">
-                  Anand Park Bus Stop, near Sancheti Classes,<br />
-                  Wadgaon Sheri, Pune — 411014
+                <p className="text-sm text-warm-300 leading-relaxed whitespace-pre-line">
+                  {settings.address || 'Anand Park Bus Stop, near Sancheti Classes,\nWadgaon Sheri, Pune — 411014'}
                 </p>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-saffron-400 flex-shrink-0" />
-                <a href="tel:+919876543210" className="text-sm text-warm-300 hover:text-gold-400 transition-colors">
-                  +91 98765 43210
+                <a href={`tel:${settings.phone || '+91 9763216146'}`} className="text-sm text-warm-300 hover:text-gold-400 transition-colors">
+                  {settings.phone || '+91 9763216146'}
                 </a>
               </li>
               <li className="flex items-start gap-3">
@@ -109,7 +113,7 @@ export default function Footer() {
             <div className="mt-5">
               <p className="text-xs font-semibold text-warm-400 uppercase tracking-wider mb-2">Delivery Areas</p>
               <div className="flex flex-wrap gap-1.5">
-                {['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri'].map((area) => (
+                {(settings.deliveryAreas || ['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri']).map((area: string) => (
                   <span key={area} className="text-xs bg-white/10 text-warm-300 px-2 py-1 rounded-lg border border-white/10">
                     {area}
                   </span>

@@ -32,12 +32,12 @@ const storeSettingsSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    default: '+91 98765 43210',
+    default: '+91 9763216146',
     trim: true,
   },
   whatsappNumber: {
     type: String,
-    default: '919876543210', // Without '+', for wa.me links
+    default: '919763216146', // Without '+', for wa.me links
     trim: true,
   },
   email: {

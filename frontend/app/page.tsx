@@ -37,6 +37,20 @@ export default async function HomePage() {
     console.error('Failed to fetch reviews:', error);
   }
 
+  // Fetch settings dynamically for the homepage
+  let settings = { phone: '+91 9763216146', deliveryAreas: ['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri'] };
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/settings`, { cache: 'no-store' });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.settings) {
+        settings = { ...settings, ...json.settings };
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch settings:', error);
+  }
+
   // Fallback if no reviews yet
   if (testimonials.length === 0) {
     testimonials = [
@@ -367,8 +381,8 @@ export default async function HomePage() {
                 </div>
                 <div>
                   <h3 className="font-display font-bold text-espresso mb-1">Call Us</h3>
-                  <a href="tel:+919876543210" className="text-saffron-900 font-bold text-lg hover:underline">
-                    +91 98765 43210
+                  <a href={`tel:${settings.phone}`} className="text-saffron-900 font-bold text-lg hover:underline">
+                    {settings.phone}
                   </a>
                 </div>
               </div>
@@ -378,8 +392,8 @@ export default async function HomePage() {
                   <Truck className="w-4 h-4" /> Delivery Areas
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri'].map((area) => (
-                    <span key={area} className="text-xs bg-white text-saffron-900 font-semibold px-2.5 py-1 rounded-lg border border-saffron-200">
+                  {settings.deliveryAreas.map((area: string) => (
+                    <span key={area} className="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-saffron-100 text-xs font-semibold text-espresso">
                       {area}
                     </span>
                   ))}

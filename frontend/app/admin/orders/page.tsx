@@ -623,7 +623,7 @@ export default function AdminOrdersPage() {
                 <p className="text-[10px] text-espresso/60 max-w-[280px] mx-auto mt-1 leading-normal whitespace-pre-line">
                   {settings.address || 'Anand Park Bus Stop, near Sancheti Classes, Wadgaon Sheri, Pune - 411014'}
                 </p>
-                <p className="text-[10px] text-espresso/80 mt-0.5 font-semibold">Phone: {settings.phone || '+91 98765 43210'}</p>
+                <p className="text-[10px] text-espresso/80 mt-0.5 font-semibold">Phone: {settings.phone || '+91 9763216146'}</p>
               </div>
 
               <div className="border-t border-b border-dashed border-warm-300 py-3 mb-4 text-[11px] leading-relaxed">
@@ -831,7 +831,7 @@ export default function AdminOrdersPage() {
                     <input
                       className="input py-1.5 px-3 text-xs"
                       type="tel"
-                      placeholder="e.g. 9876543210"
+                      placeholder="e.g. 9763216146"
                       value={offlineCustomerPhone}
                       onChange={(e) => setOfflineCustomerPhone(e.target.value)}
                     />

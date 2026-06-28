@@ -4,8 +4,9 @@ import { getWhatsAppLink } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { MessageCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useQuery } from 'react-query';
+import { settingsApi } from '@/lib/api';
 
-const WHATSAPP_NUMBER = '919876543210'; // Replace with real number
 const MESSAGE = "Hello! I'd like to place an order or know more about Annada Pure Veg 🌿";
 
 export default function WhatsAppButton() {
@@ -23,9 +24,12 @@ export default function WhatsAppButton() {
     return null;
   }
 
+  const { data: settingsData } = useQuery('store-settings', () => settingsApi.get().then(r => r.data));
+  const whatsappNumber = settingsData?.settings?.whatsappNumber || '919763216146';
+
   return (
     <a
-      href={getWhatsAppLink(WHATSAPP_NUMBER, MESSAGE)}
+      href={getWhatsAppLink(whatsappNumber, MESSAGE)}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat on WhatsApp"

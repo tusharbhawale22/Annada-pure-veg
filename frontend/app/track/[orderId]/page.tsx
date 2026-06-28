@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useQuery } from 'react-query';
-import { orderApi } from '@/lib/api';
+import { orderApi, settingsApi } from '@/lib/api';
 import OrderStepper from '@/components/OrderStepper';
 import { formatCurrency, formatDateTime, ORDER_STATUS_CONFIG } from '@/lib/utils';
 import Link from 'next/link';
@@ -18,6 +18,9 @@ export default function OrderTrackPage() {
     () => orderApi.getOrder(orderId).then((r) => r.data.order),
     { enabled: !!orderId, refetchInterval: 30000 }
   );
+
+  const { data: settingsData } = useQuery('store-settings', () => settingsApi.get().then(r => r.data));
+  const whatsappNumber = settingsData?.settings?.whatsappNumber || '919763216146';
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -114,7 +117,7 @@ export default function OrderTrackPage() {
             <p className="font-semibold text-espresso text-sm">Need help with your order?</p>
             <p className="text-xs text-espresso/60">Contact us on WhatsApp for instant support</p>
           </div>
-          <a href={`https://wa.me/919876543210?text=Hi! My order number is ${order.orderNumber}`}
+          <a href={`https://wa.me/${whatsappNumber}?text=Hi! My order number is ${order.orderNumber}`}
             target="_blank" rel="noopener noreferrer"
             className="px-3 py-2 bg-[#25D366] text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity">
             WhatsApp

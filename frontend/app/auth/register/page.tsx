@@ -78,16 +78,23 @@ function RegisterContent() {
           }
         : undefined;
 
-      const res = await authApi.register({
+      const payload = {
         name:     data.name,
         email:    data.email,
         phone:    data.phone,
         password: data.password,
         address,
-      });
-      setUser(res.data.user);
-      toast.success(`Welcome to Annada, ${res.data.user.name.split(' ')[0]}! 🌿`);
-      router.push(redirect);
+      };
+      const res = await authApi.register(payload);
+      const user = res.data.user;
+      toast.success('Registration successful! Please login.');
+      
+      let finalRedirect = redirect;
+      if (user && user.role !== 'admin' && redirect.startsWith('/admin')) {
+        finalRedirect = '/';
+      }
+      
+      router.push(`/auth/login?redirect=${encodeURIComponent(finalRedirect)}`);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Registration failed');
     } finally {
@@ -134,7 +141,7 @@ function RegisterContent() {
               <div className="flex items-center px-3 bg-white/10 border border-white/20 rounded-xl text-sm font-semibold text-white/80 flex-shrink-0">
                 🇮🇳 +91
               </div>
-              <input id="phone" type="tel" autoComplete="tel" className="input" maxLength={10} placeholder="9876543210" {...register('phone')} />
+              <input id="phone" type="tel" autoComplete="tel" className="input" maxLength={10} placeholder="9763216146" {...register('phone')} />
             </div>
             {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
           </div>
