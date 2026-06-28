@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from 'react-query';
-import { orderApi, menuApi } from '@/lib/api';
+import { orderApi, menuApi, settingsApi } from '@/lib/api';
 import { formatCurrency, formatDateTime, ORDER_STATUS_CONFIG } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Search, ChevronDown, Plus, Minus, X, Printer, Eye, MapPin, CreditCard, User, Phone, Package, CheckCircle } from 'lucide-react';
@@ -44,8 +44,42 @@ export default function AdminOrdersPage() {
   const { data, isLoading, refetch } = useQuery(
     ['admin-orders', status, search],
     () => orderApi.getAllOrders(params).then((r) => r.data),
-    { keepPreviousData: true }
+    { 
+      keepPreviousData: true,
+      refetchInterval: 10000 // Poll every 10 seconds for real-time order updates
+    }
   );
+
+  const { data: settingsData } = useQuery('store-settings', () => settingsApi.get().then(r => r.data));
+  const settings = settingsData?.settings || {};
+
+  const seenOrderIds = useRef<Set<string>>(new Set());
+  const isInitialLoad = useRef(true);
+
+  useEffect(() => {
+    if (data?.orders) {
+      let newCount = 0;
+      data.orders.forEach((o: any) => {
+        if (!seenOrderIds.current.has(o._id)) {
+          newCount++;
+          seenOrderIds.current.add(o._id);
+        }
+      });
+      
+      if (isInitialLoad.current) {
+        isInitialLoad.current = false;
+        return; // Skip alert on very first load
+      }
+
+      if (newCount > 0) {
+        toast.success(`🔔 ${newCount} New Order(s) Received!`, {
+          duration: 6000,
+          icon: '🚨',
+          style: { background: '#FFF3CD', color: '#856404', fontWeight: 'bold' }
+        });
+      }
+    }
+  }, [data?.orders]);
 
   const { data: menuData } = useQuery(
     'admin-menu-items',
@@ -135,7 +169,7 @@ export default function AdminOrdersPage() {
 
   // Calculations for Offline Order
   const offlineSubtotal = offlineCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const offlineDeliveryFee = offlineOrderType === 'delivery' && offlineSubtotal < 300 ? 30 : 0;
+  const offlineDeliveryFee = offlineOrderType === 'delivery' && offlineSubtotal < (settings.freeDeliveryAbove || 300) ? (settings.deliveryFee || 30) : 0;
   const offlineTax = Math.round(((offlineSubtotal + offlineDeliveryFee) * 5) / 100);
   const offlineTotal = offlineSubtotal + offlineDeliveryFee + offlineTax;
 
@@ -586,10 +620,10 @@ export default function AdminOrdersPage() {
               <div className="text-center mb-6">
                 <h2 className="font-display font-black text-2xl text-saffron-900 leading-tight">Annada Pure Veg 🌿</h2>
                 <p className="text-[11px] text-espresso/70 mt-1 uppercase tracking-wider font-semibold">100% Pure Vegetarian Breakfast & Tiffin</p>
-                <p className="text-[10px] text-espresso/60 max-w-[280px] mx-auto mt-1 leading-normal">
-                  Anand Park Bus Stop, near Sancheti Classes, Wadgaon Sheri, Pune - 411014
+                <p className="text-[10px] text-espresso/60 max-w-[280px] mx-auto mt-1 leading-normal whitespace-pre-line">
+                  {settings.address || 'Anand Park Bus Stop, near Sancheti Classes, Wadgaon Sheri, Pune - 411014'}
                 </p>
-                <p className="text-[10px] text-espresso/80 mt-0.5 font-semibold">Phone: +91 98765 43210</p>
+                <p className="text-[10px] text-espresso/80 mt-0.5 font-semibold">Phone: {settings.phone || '+91 98765 43210'}</p>
               </div>
 
               <div className="border-t border-b border-dashed border-warm-300 py-3 mb-4 text-[11px] leading-relaxed">

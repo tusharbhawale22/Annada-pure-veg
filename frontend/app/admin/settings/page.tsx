@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { settingsApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Save, MapPin, Phone, Clock, Truck, Trash2, Plus } from 'lucide-react';
@@ -22,6 +22,7 @@ interface TiffinPlan {
 }
 
 export default function AdminSettingsPage() {
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<{
     storeName: string;
@@ -88,6 +89,9 @@ export default function AdminSettingsPage() {
         ...form,
         deliveryAreas: form.deliveryAreas.split(',').map((s) => s.trim()).filter(Boolean),
       });
+      queryClient.invalidateQueries('settings-admin');
+      queryClient.invalidateQueries('store-settings');
+      queryClient.invalidateQueries('admin-settings');
       toast.success('Settings saved! ✅');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Save failed');
