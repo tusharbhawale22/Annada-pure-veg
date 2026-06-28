@@ -39,8 +39,9 @@ export default function AdminSettingsPage() {
     tiffinPlans: TiffinPlan[];
   } | null>(null);
 
-  const { isLoading } = useQuery('settings-admin', () =>
+  const { isLoading, isError, error, refetch } = useQuery('settings-admin', () =>
     settingsApi.get().then((r) => r.data.settings), {
+    retry: 2,
     onSuccess: (settings) => {
       setForm({
         storeName: settings.storeName || '',
@@ -56,6 +57,24 @@ export default function AdminSettingsPage() {
         googleMapsLink: settings.googleMapsLink || '',
         deliveryAreas: (settings.deliveryAreas || []).join(', '),
         tiffinPlans: settings.tiffinPlans || [],
+      });
+    },
+    onError: () => {
+      // Initialize form with defaults so the page still renders
+      setForm({
+        storeName: '',
+        tagline: '',
+        address: '',
+        phone: '',
+        whatsappNumber: '',
+        email: '',
+        deliveryFee: 30,
+        minOrderAmount: 100,
+        freeDeliveryAbove: 300,
+        taxRate: 5,
+        googleMapsLink: '',
+        deliveryAreas: '',
+        tiffinPlans: [],
       });
     },
   });
@@ -106,7 +125,15 @@ export default function AdminSettingsPage() {
     });
   };
 
-  if (isLoading || !form) {
+  if (isLoading) {
+    return (
+      <div className="p-8 space-y-4">
+        {[1,2,3,4].map((i) => <div key={i} className="h-16 skeleton-shimmer rounded-xl" />)}
+      </div>
+    );
+  }
+
+  if (!form) {
     return (
       <div className="p-8 space-y-4">
         {[1,2,3,4].map((i) => <div key={i} className="h-16 skeleton-shimmer rounded-xl" />)}
@@ -120,6 +147,24 @@ export default function AdminSettingsPage() {
   return (
     <div className="p-8 max-w-2xl">
       <h1 className="font-display text-2xl font-bold text-espresso mb-6">Store Settings</h1>
+
+      {isError && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between gap-4">
+          <div>
+            <p className="text-red-700 font-semibold text-sm">⚠️ Could not load settings from server</p>
+            <p className="text-red-500 text-xs mt-0.5">
+              {error instanceof Error ? error.message : 'Connection failed. Showing empty defaults.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="text-xs font-bold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       <form onSubmit={handleSave} className="space-y-6">
 
