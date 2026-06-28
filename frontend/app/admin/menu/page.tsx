@@ -21,7 +21,7 @@ interface MenuItem {
   sortOrder: number;
 }
 
-const CATEGORIES = ["Today's Menu", 'Special Dishes', 'Best Dishes', 'Morning Booster', 'Healthy Tummy', 'Yummy Bites', 'Wrap', 'Pizza', 'Maggi', 'Tiffin', 'Others'];
+const CATEGORIES = ["Today's Menu", 'Special Dishes', 'Morning Booster', 'Healthy Tummy', 'Yummy Bites', 'Wrap', 'Pizza', 'Maggi', 'Tiffin', 'Others'];
 
 export default function AdminMenuPage() {
   const [categoryFilter, setCategoryFilter] = useState('All');
