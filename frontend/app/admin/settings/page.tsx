@@ -89,15 +89,17 @@ export default function AdminSettingsPage() {
       foodItems: 'Dal + Sabzi + Roti + Rice',
       isAvailable: true,
     };
+    const currentPlans = Array.isArray(form.tiffinPlans) ? form.tiffinPlans : [];
     setForm({
       ...form,
-      tiffinPlans: [...form.tiffinPlans, newPlan],
+      tiffinPlans: [...currentPlans, newPlan],
     });
   };
 
   const handleDeletePlan = (index: number) => {
     if (!form) return;
-    const updated = form.tiffinPlans.filter((_, i) => i !== index);
+    const currentPlans = Array.isArray(form.tiffinPlans) ? form.tiffinPlans : [];
+    const updated = currentPlans.filter((_, i) => i !== index);
     setForm({
       ...form,
       tiffinPlans: updated,
