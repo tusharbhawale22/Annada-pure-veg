@@ -272,6 +272,43 @@ const menuItems = [
     sortOrder: 3,
     preparationTime: 15,
   },
+
+  // ── SPECIAL DISHES ──────────────────────────────────────
+  {
+    name: 'Special Amritsari Chole Kulche',
+    description: 'Authentic spiced chickpea curry served with two soft, leavened clay-oven baked flatbreads stuffed with spiced potatoes and paneer. Served with pickle and butter.',
+    price: 150,
+    category: 'Special Dishes',
+    isVeg: true,
+    isAvailable: true,
+    isTodaySpecial: true,
+    sortOrder: 1,
+    preparationTime: 15,
+  },
+  {
+    name: 'Annada Special Veg Biryani',
+    description: 'Fragrant basmati rice layered with fresh seasonal vegetables and premium spices, slow-cooked in a sealed handi. Served with cucumber raita.',
+    price: 140,
+    category: 'Special Dishes',
+    isVeg: true,
+    isAvailable: true,
+    isTodaySpecial: true,
+    sortOrder: 2,
+    preparationTime: 20,
+  },
+
+  // ── TODAY'S MENU ────────────────────────────────────────
+  {
+    name: 'Dal Bati Churma (Today Only)',
+    description: 'Traditional Rajasthani treat: hard wheat rolls baked over charcoal, crushed and served with rich mixed lentil curry (dal) and sweet crumbled wheat mixture (churma). Topped with pure ghee.',
+    price: 130,
+    category: "Today's Menu",
+    isVeg: true,
+    isAvailable: true,
+    isTodaySpecial: true,
+    sortOrder: 1,
+    preparationTime: 15,
+  },
 ];
 
 const coupons = [

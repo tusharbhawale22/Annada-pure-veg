@@ -59,6 +59,13 @@ const items = [
   { name: 'Aloo Paratha', category: 'Morning Booster', price: 70, isVeg: true, isAvailable: true },
   { name: 'Masala Chai', category: 'Others', price: 20, isVeg: true, isAvailable: true },
   { name: 'Tiffin Thali', category: 'Healthy Tummy', price: 120, isVeg: true, isAvailable: true },
+
+  // SPECIAL DISHES
+  { name: 'Special Amritsari Chole Kulche', category: 'Special Dishes', price: 150, isVeg: true, isAvailable: true, isTodaySpecial: true },
+  { name: 'Annada Special Veg Biryani', category: 'Special Dishes', price: 140, isVeg: true, isAvailable: true, isTodaySpecial: true },
+
+  // TODAY'S MENU
+  { name: 'Dal Bati Churma (Today Only)', category: "Today's Menu", price: 130, isVeg: true, isAvailable: true, isTodaySpecial: true },
 ];
 
 mongoose.connect('mongodb+srv://annadauser:Tushar1015@cluster0.yy2mobr.mongodb.net/annada-pure-veg?retryWrites=true&w=majority')

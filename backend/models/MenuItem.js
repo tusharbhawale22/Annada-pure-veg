@@ -13,6 +13,8 @@ const CATEGORIES = [
   'Pizza',
   'Maggi',
   'Tiffin',
+  'Special Dishes',
+  "Today's Menu",
   'Others',
 ];
 

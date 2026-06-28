@@ -12,11 +12,18 @@ import Image from 'next/image';
 import { useCartStore } from '@/store/cartStore';
 import toast from 'react-hot-toast';
 
-const CATEGORIES = ['All', 'Morning Booster', 'Healthy Tummy', 'Yummy Bites', 'Wrap', 'Pizza', 'Maggi'];
+const CATEGORIES = ['All', 'Morning Booster', 'Healthy Tummy', 'Yummy Bites', 'Wrap', 'Pizza', 'Maggi', 'Special Dishes', "Today's Menu"];
 
 const CATEGORY_EMOJIS: Record<string, string> = {
-  All: '🍽️', 'Morning Booster': '🌅', 'Healthy Tummy': '🥗', 'Yummy Bites': '🥪', Wrap: '🌯',
-  Pizza: '🍕', Maggi: '🍜',
+  All: '🍽️', 
+  'Morning Booster': '🌅', 
+  'Healthy Tummy': '🥗', 
+  'Yummy Bites': '🥪', 
+  Wrap: '🌯',
+  Pizza: '🍕', 
+  Maggi: '🍜',
+  'Special Dishes': '✨',
+  "Today's Menu": '📋',
 };
 
 export default function MenuPage() {

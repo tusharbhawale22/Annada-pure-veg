@@ -21,7 +21,7 @@ interface MenuItem {
   sortOrder: number;
 }
 
-const CATEGORIES = ['Morning Booster', 'Healthy Tummy', 'Yummy Bites', 'Wrap', 'Pizza', 'Maggi', 'Tiffin', 'Others'];
+const CATEGORIES = ['Morning Booster', 'Healthy Tummy', 'Yummy Bites', 'Wrap', 'Pizza', 'Maggi', 'Tiffin', 'Special Dishes', "Today's Menu", 'Others'];
 
 export default function AdminMenuPage() {
   const [categoryFilter, setCategoryFilter] = useState('All');

@@ -17,6 +17,8 @@ const CATEGORY_IMAGES: Record<string, string> = {
   'Pizza': 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&q=80&w=200&h=200',
   'Wrap': 'https://images.unsplash.com/photo-1626700051175-6518c4793fde?auto=format&fit=crop&q=80&w=200&h=200',
   'Maggi': 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&q=80&w=200&h=200',
+  'Special Dishes': 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=200&h=200',
+  "Today's Menu": 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=200&h=200',
   'Others': 'https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&q=80&w=200&h=200',
 };
 
