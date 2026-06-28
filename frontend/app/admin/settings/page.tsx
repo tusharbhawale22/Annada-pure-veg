@@ -8,6 +8,17 @@ import { Save, MapPin, Phone, Clock, Truck } from 'lucide-react';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+interface TiffinPlan {
+  id: string;
+  name: string;
+  planType: 'weekly' | 'monthly';
+  mealType: 'lunch' | 'dinner' | 'both';
+  price: number;
+  description: string;
+  numberOfDays: number;
+  deliveryTime: string;
+}
+
 export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<{
@@ -23,6 +34,7 @@ export default function AdminSettingsPage() {
     taxRate: number;
     googleMapsLink: string;
     deliveryAreas: string;
+    tiffinPlans: TiffinPlan[];
   } | null>(null);
 
   const { isLoading } = useQuery('settings-admin', () =>
@@ -41,6 +53,7 @@ export default function AdminSettingsPage() {
         taxRate: settings.taxRate || 5,
         googleMapsLink: settings.googleMapsLink || '',
         deliveryAreas: (settings.deliveryAreas || []).join(', '),
+        tiffinPlans: settings.tiffinPlans || [],
       });
     },
   });
@@ -142,6 +155,79 @@ export default function AdminSettingsPage() {
           <div>
             <label className="input-label">Delivery Areas (comma separated)</label>
             <input className="input" placeholder="Kharadi, Viman Nagar, Sainath Nagar" value={form.deliveryAreas} onChange={(e) => setField('deliveryAreas', e.target.value)} />
+          </div>
+        </div>
+
+        {/* Tiffin Plans Settings */}
+        <div className="card p-6 space-y-4">
+          <h2 className="font-display font-semibold text-espresso flex items-center gap-2">
+            🍱 Tiffin Subscription Plans Settings
+          </h2>
+          <div className="space-y-6">
+            {(form.tiffinPlans || []).map((plan, index) => (
+              <div key={plan.id} className="border border-warm-200 p-4 rounded-xl space-y-3 bg-[#FFFDFB]">
+                <div className="flex items-center justify-between border-b border-warm-100 pb-2">
+                  <span className="font-bold text-espresso text-sm capitalize">{plan.name} Plan</span>
+                  <span className="text-xs bg-saffron-100 text-saffron-900 px-2 py-0.5 rounded font-medium uppercase">{plan.planType}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="input-label">Price (₹)</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      className="input" 
+                      value={plan.price} 
+                      onChange={(e) => {
+                        const updated = [...form.tiffinPlans];
+                        updated[index] = { ...plan, price: Number(e.target.value) };
+                        setForm({ ...form, tiffinPlans: updated });
+                      }} 
+                    />
+                  </div>
+                  <div>
+                    <label className="input-label">Number of Days</label>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      className="input" 
+                      value={plan.numberOfDays || 0} 
+                      onChange={(e) => {
+                        const updated = [...form.tiffinPlans];
+                        updated[index] = { ...plan, numberOfDays: Number(e.target.value) };
+                        setForm({ ...form, tiffinPlans: updated });
+                      }} 
+                    />
+                  </div>
+                  <div>
+                    <label className="input-label">Delivery Time</label>
+                    <input 
+                      type="text" 
+                      className="input" 
+                      value={plan.deliveryTime || ''} 
+                      onChange={(e) => {
+                        const updated = [...form.tiffinPlans];
+                        updated[index] = { ...plan, deliveryTime: e.target.value };
+                        setForm({ ...form, tiffinPlans: updated });
+                      }} 
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="input-label">Description</label>
+                  <input 
+                    type="text" 
+                    className="input" 
+                    value={plan.description || ''} 
+                    onChange={(e) => {
+                      const updated = [...form.tiffinPlans];
+                      updated[index] = { ...plan, description: e.target.value };
+                      setForm({ ...form, tiffinPlans: updated });
+                    }} 
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

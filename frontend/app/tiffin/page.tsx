@@ -245,7 +245,7 @@ export default function TiffinPage() {
 
             {/* ── Plan Cards ── */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {plans.map((plan: { id: string; name: string; planType: string; mealType: string; price: number; description: string }) => {
+              {plans.map((plan: { id: string; name: string; planType: string; mealType: string; price: number; description: string; numberOfDays?: number; deliveryTime?: string }) => {
                 const isPopular = plan.planType === 'monthly';
 
                 return (
@@ -276,12 +276,24 @@ export default function TiffinPage() {
 
                     {/* Features */}
                     <ul className="space-y-2 mb-6 flex-1">
-                      {PLAN_FEATURES[plan.mealType].map((f) => (
-                        <li key={f} className="flex items-center gap-2 text-sm text-[#5C3317]">
+                      <li className="flex items-center gap-2 text-sm text-[#5C3317]">
+                        <Check className="w-4 h-4 text-[#E65100] flex-shrink-0" />
+                        Duration: {plan.numberOfDays || (plan.planType === 'weekly' ? 7 : 30)} days
+                      </li>
+                      {plan.deliveryTime && (
+                        <li className="flex items-center gap-2 text-sm text-[#5C3317]">
                           <Check className="w-4 h-4 text-[#E65100] flex-shrink-0" />
-                          {f}
+                          Delivery Time: {plan.deliveryTime}
                         </li>
-                      ))}
+                      )}
+                      <li className="flex items-center gap-2 text-sm text-[#5C3317]">
+                        <Check className="w-4 h-4 text-[#E65100] flex-shrink-0" />
+                        Dal + Sabzi + Roti + Rice
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-[#5C3317]">
+                        <Check className="w-4 h-4 text-[#E65100] flex-shrink-0" />
+                        {plan.mealType === 'both' ? 'Best value plan' : 'Fresh food daily'}
+                      </li>
                     </ul>
 
                     {/* Price + CTA */}
