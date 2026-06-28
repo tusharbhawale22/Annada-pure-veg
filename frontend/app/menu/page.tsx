@@ -7,7 +7,6 @@ import { menuApi } from '@/lib/api';
 import MenuCard from '@/components/MenuCard';
 import { SkeletonList } from '@/components/SkeletonCard';
 import { debounce, cn, formatCurrency } from '@/lib/utils';
-import MenuSidebar from '@/components/MenuSidebar';
 import Image from 'next/image';
 import { useCartStore } from '@/store/cartStore';
 import toast from 'react-hot-toast';
@@ -77,9 +76,9 @@ export default function MenuPage() {
   const nonSpecials = items.filter((i: { isTodaySpecial: boolean }) => !i.isTodaySpecial);
 
   return (
-    <div className="lg:grid lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px] min-h-screen bg-[#FFFDFB] pt-16 md:pt-20">
+    <div className="min-h-screen bg-[#FFFDFB] pt-16 md:pt-20">
       
-      {/* ── Left Area: Main Content ── */}
+      {/* ── Main Content ── */}
       <div className="flex flex-col pb-20 lg:pb-0">
 
         {/* ── Header Banner ── */}
@@ -198,9 +197,6 @@ export default function MenuPage() {
         )}
         </div>
       </div>
-
-      {/* ── Right Area: Sidebar (Desktop Only) ── */}
-      <MenuSidebar specials={specials} />
     </div>
   );
 }

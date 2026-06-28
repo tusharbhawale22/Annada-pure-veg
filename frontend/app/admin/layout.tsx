@@ -64,7 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     try { await authApi.logout(); } finally {
       clearUser();
       toast.success('Logged out.');
-      router.push('/');
+      window.location.href = '/';
     }
   };
 

@@ -13,8 +13,14 @@ export default function Footer() {
   const { data: settingsData } = useQuery('store-settings', () => settingsApi.get().then(r => r.data));
   const settings = settingsData?.settings || {};
 
-  // Hide footer on admin pages
-  if (pathname?.startsWith('/admin')) return null;
+  // Hide footer on admin, menu, and tiffin pages
+  if (
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/menu') ||
+    pathname?.startsWith('/tiffin')
+  ) {
+    return null;
+  }
 
   const quickLinks = [
     { href: '/',        label: 'Home'        },

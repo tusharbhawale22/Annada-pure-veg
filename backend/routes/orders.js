@@ -12,6 +12,8 @@ const Order = require('../models/Order');
 const MenuItem = require('../models/MenuItem');
 const Coupon = require('../models/Coupon');
 const StoreSettings = require('../models/StoreSettings');
+const User = require('../models/User');
+const sendEmail = require('../config/email');
 const { protect, adminOnly } = require('../middleware/auth');
 const { validateOrder } = require('../middleware/validate');
 const { orderLimiter } = require('../middleware/rateLimiter');
@@ -132,6 +134,21 @@ router.post('/', protect, orderLimiter, validateOrder, async (req, res, next) =>
 
     const populated = await Order.findById(order._id).populate('user', 'name email phone');
 
+    // Notify admins if it's a COD order (online payments notify after successful payment verify)
+    if (paymentMethod === 'cod') {
+      try {
+        const admins = await User.find({ role: 'admin' });
+        const emails = admins.map(a => a.email);
+        if (emails.length > 0) {
+          const emailSubject = `🔔 New COD Order Received! (#${order._id.toString().slice(-6)})`;
+          const emailText = `Hello Admin,\n\nA new Cash on Delivery order has been placed by ${req.user.name}.\nTotal Amount: ₹${totalAmount}\nOrder Type: ${orderType}\n\nPlease check the admin dashboard for details.`;
+          await Promise.all(emails.map(email => sendEmail({ email, subject: emailSubject, text: emailText })));
+        }
+      } catch (emailErr) {
+        console.error('Failed to send admin notification email:', emailErr);
+      }
+    }
+
     res.status(201).json({
       success: true,
       message: 'Order placed successfully! 🎉',
@@ -149,9 +166,11 @@ router.get('/my', protect, async (req, res, next) => {
 
     const filter = {
       user: req.user._id,
+      // Show non-razorpay orders always (COD, cash, etc.)
+      // Show razorpay orders ONLY if fully verified (paymentStatus=paid AND razorpayPaymentId set)
       $or: [
         { paymentMethod: { $ne: 'razorpay' } },
-        { paymentStatus: 'paid' }
+        { paymentMethod: 'razorpay', paymentStatus: 'paid', razorpayPaymentId: { $ne: '' } }
       ]
     };
 
@@ -181,13 +200,14 @@ router.get('/', protect, adminOnly, async (req, res, next) => {
   try {
     const { page = 1, limit = 20, status, paymentMethod, date, search } = req.query;
 
-    // Filter to exclude unpaid online (razorpay) orders from the admin panel
+    // Filter: show non-razorpay orders always.
+    // For razorpay: ONLY show if paymentStatus=paid AND razorpayPaymentId is set (truly verified)
     const filter = {
       $and: [
         {
           $or: [
             { paymentMethod: { $ne: 'razorpay' } },
-            { paymentStatus: 'paid' }
+            { paymentMethod: 'razorpay', paymentStatus: 'paid', razorpayPaymentId: { $ne: '' } }
           ]
         }
       ]

@@ -33,9 +33,17 @@ function LoginContent() {
     setLoading(true);
     try {
       const res = await authApi.login(data);
-      setUser(res.data.user);
-      toast.success(`Welcome back, ${res.data.user.name.split(' ')[0]}! 🌿`);
-      router.push(redirect);
+      const user = res.data.user;
+      setUser(user);
+      toast.success(`Welcome back, ${user.name.split(' ')[0]}! 🌿`);
+      
+      // Safety: Never redirect a non-admin to an admin route
+      let finalRedirect = redirect;
+      if (user.role !== 'admin' && redirect.startsWith('/admin')) {
+        finalRedirect = '/';
+      }
+      
+      router.push(finalRedirect);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Login failed');
     } finally {

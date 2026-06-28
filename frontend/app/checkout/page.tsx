@@ -37,8 +37,10 @@ export default function CheckoutPage() {
   const [couponData, setCouponData] = useState<{ discount: number; message: string } | null>(null);
   const [couponLoading, setCouponLoading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [rzpOpen, setRzpOpen] = useState(false); // true while Razorpay modal is open
   const [notes,   setNotes]   = useState('');
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null); // track created order for cleanup
 
   useEffect(() => {
     if (payMethod === 'cod') {
@@ -157,6 +159,7 @@ export default function CheckoutPage() {
 
     setLoading(true);
     setPaymentError(null);
+    let createdOrderId: string | null = null;
     try {
       // Save new address to profile if checkbox ticked
       if (selectedAddressId === 'new' && saveToProfile && newAddress.line1 && newAddress.area && newAddress.pincode) {
@@ -180,9 +183,11 @@ export default function CheckoutPage() {
 
       const orderRes = await orderApi.create(orderData);
       const order = orderRes.data.order;
+      createdOrderId = order._id; // track for cleanup on error
 
       if (payMethod === 'cod') {
         clearCart();
+        setPendingOrderId(null);
         toast.success('Order placed! 🎉');
         router.push(`/order-confirmation?orderId=${order._id}`);
         return;
@@ -192,6 +197,7 @@ export default function CheckoutPage() {
       const payRes = await paymentApi.createOrder({ orderId: order._id, type: 'order' });
       const { razorpayOrder, key } = payRes.data;
 
+      setRzpOpen(true); // lock the button while modal is open
       const rzp = new window.Razorpay({
         key,
         amount: razorpayOrder.amount,
@@ -200,13 +206,15 @@ export default function CheckoutPage() {
         description: `Order #${order.orderNumber}`,
         order_id: razorpayOrder.id,
         handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+          setRzpOpen(false);
           try {
             await paymentApi.verify({ ...response, orderId: order._id, type: 'order' });
             clearCart();
+            setPendingOrderId(null);
             toast.success('Payment successful! Order confirmed 🎉');
             router.push(`/order-confirmation?orderId=${order._id}`);
           } catch {
-            setPaymentError('Payment verification failed. Please try again.');
+            setPaymentError('Payment verification failed. Please contact support.');
             toast.error('Payment verification failed. Contact support.');
           }
         },
@@ -214,12 +222,14 @@ export default function CheckoutPage() {
         theme: { color: '#E65100' },
         modal: {
           ondismiss: async () => {
+            setRzpOpen(false);
             try {
               await paymentApi.cancel({ orderId: order._id, type: 'order' });
             } catch (err) {
-              console.error('Error reporting cancellation:', err);
+              console.error('Error cancelling order:', err);
             }
-            setPaymentError('Payment not done. Please make payment to place the order.');
+            setPendingOrderId(null);
+            setPaymentError('Payment not done. Please try again to complete payment.');
             toast.error('Payment cancelled. Your order has not been placed.');
           }
         },
@@ -228,6 +238,14 @@ export default function CheckoutPage() {
 
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : '';
+      // Clean up orphaned order if payment initialization failed after order was created
+      if (createdOrderId && payMethod === 'razorpay') {
+        try {
+          await paymentApi.cancel({ orderId: createdOrderId, type: 'order' });
+        } catch {
+          // Best-effort cleanup
+        }
+      }
       if (errMsg.includes('Menu item') && errMsg.includes('not found')) {
         const match = errMsg.match(/Menu item ([a-f0-9]{24}) not found/i);
         if (match && match[1]) {
@@ -513,10 +531,13 @@ export default function CheckoutPage() {
 
               <button 
                 onClick={handlePlaceOrder} 
-                disabled={loading || isStoreClosed} 
+                disabled={loading || rzpOpen || isStoreClosed} 
                 className="btn-primary w-full justify-center py-4 text-base disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isStoreClosed ? 'Store is Closed' : loading ? 'Placing Order...' : payMethod === 'cod' ? '🛵 Place Order' : '💳 Make Payment'}
+                {isStoreClosed ? 'Store is Closed' :
+                 rzpOpen ? '🔒 Complete Payment in Popup...' :
+                 loading ? 'Placing Order...' :
+                 payMethod === 'cod' ? '🛵 Place Order' : '💳 Make Payment'}
               </button>
 
               <p className="text-xs text-center text-espresso/50 mt-3">

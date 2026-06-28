@@ -9,6 +9,8 @@ const crypto = require('crypto');
 const razorpay = require('../config/razorpay');
 const Order = require('../models/Order');
 const TiffinSubscription = require('../models/TiffinSubscription');
+const User = require('../models/User');
+const sendEmail = require('../config/email');
 const { protect } = require('../middleware/auth');
 
 const router = express.Router();
@@ -90,19 +92,34 @@ router.post('/verify', protect, async (req, res, next) => {
 
     // Update payment status
     if (type === 'order') {
-      const order = await Order.findByIdAndUpdate(
-        orderId,
-        {
-          paymentStatus: 'paid',
-          razorpayPaymentId: razorpay_payment_id,
-          orderStatus: 'confirmed',
-        },
-        { new: true }
-      );
+      // Find the order first to check existence and idempotency
+      const existingOrder = await Order.findById(orderId);
+      if (!existingOrder) {
+        return res.status(404).json({ success: false, message: 'Order not found — may have been cancelled.' });
+      }
+      // Idempotency: if already paid, return success without re-processing
+      if (existingOrder.paymentStatus === 'paid') {
+        return res.json({ success: true, message: 'Payment already verified.', paymentId: existingOrder.razorpayPaymentId });
+      }
 
-      if (order) {
-        order.statusHistory.push({ status: 'confirmed', note: 'Payment received via Razorpay' });
-        await order.save();
+      existingOrder.paymentStatus = 'paid';
+      existingOrder.razorpayPaymentId = razorpay_payment_id;
+      existingOrder.orderStatus = 'confirmed';
+      existingOrder.statusHistory.push({ status: 'confirmed', note: 'Payment received via Razorpay' });
+      await existingOrder.save();
+
+      // Notify admins
+      try {
+        const admins = await User.find({ role: 'admin' });
+        const emails = admins.map(a => a.email);
+        const userDetails = await User.findById(existingOrder.user);
+        if (emails.length > 0) {
+          const emailSubject = `💰 New Paid Order Received! (#${existingOrder._id.toString().slice(-6)})`;
+          const emailText = `Hello Admin,\n\nA new order has been placed and PAID ONLINE by ${userDetails ? userDetails.name : 'a customer'}.\nTotal Amount: ₹${existingOrder.totalAmount}\nPayment Method: Razorpay\n\nPlease check the admin dashboard for details.`;
+          await Promise.all(emails.map(email => sendEmail({ email, subject: emailSubject, text: emailText })));
+        }
+      } catch (emailErr) {
+        console.error('Failed to send admin notification email:', emailErr);
       }
     } else {
       await TiffinSubscription.findByIdAndUpdate(orderId, {
@@ -128,7 +145,15 @@ router.post('/cancel', protect, async (req, res, next) => {
     const { orderId, type = 'order' } = req.body;
 
     if (type === 'order') {
-      await Order.findByIdAndDelete(orderId);
+      // Mark as cancelled/failed instead of deleting — keeps a record and prevents ghost orders
+      const order = await Order.findById(orderId);
+      if (order && order.paymentStatus !== 'paid') {
+        // Only cancel if not already paid (safety check)
+        order.orderStatus = 'cancelled';
+        order.paymentStatus = 'failed';
+        order.statusHistory.push({ status: 'cancelled', note: 'Payment not completed by user' });
+        await order.save();
+      }
     } else {
       await TiffinSubscription.findByIdAndUpdate(orderId, {
         paymentStatus: 'failed',
@@ -138,7 +163,7 @@ router.post('/cancel', protect, async (req, res, next) => {
 
     res.json({
       success: true,
-      message: 'Payment cancelled and marked as failed.',
+      message: 'Payment cancelled.',
     });
   } catch (err) {
     next(err);
