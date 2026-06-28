@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery } from 'react-query';
 import { settingsApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Save, MapPin, Phone, Clock, Truck } from 'lucide-react';
+import { Save, MapPin, Phone, Clock, Truck, Trash2, Plus } from 'lucide-react';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -73,6 +73,35 @@ export default function AdminSettingsPage() {
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Save failed');
     } finally { setSaving(false); }
+  };
+
+  const handleAddPlan = () => {
+    if (!form) return;
+    const newPlan: TiffinPlan = {
+      id: `tp_${Date.now()}`,
+      name: 'New Subscription Plan',
+      planType: 'weekly',
+      mealType: 'lunch',
+      price: 0,
+      description: '',
+      numberOfDays: 7,
+      deliveryTime: '12:30 PM',
+      foodItems: 'Dal + Sabzi + Roti + Rice',
+      isAvailable: true,
+    };
+    setForm({
+      ...form,
+      tiffinPlans: [...form.tiffinPlans, newPlan],
+    });
+  };
+
+  const handleDeletePlan = (index: number) => {
+    if (!form) return;
+    const updated = form.tiffinPlans.filter((_, i) => i !== index);
+    setForm({
+      ...form,
+      tiffinPlans: updated,
+    });
   };
 
   if (isLoading || !form) {
@@ -162,15 +191,38 @@ export default function AdminSettingsPage() {
 
         {/* Tiffin Plans Settings */}
         <div className="card p-6 space-y-4">
-          <h2 className="font-display font-semibold text-espresso flex items-center gap-2">
-            🍱 Tiffin Subscription Plans Settings
-          </h2>
-          <div className="space-y-6">
+          <div className="flex justify-between items-center border-b border-warm-100 pb-3">
+            <h2 className="font-display font-semibold text-espresso flex items-center gap-2">
+              🍱 Tiffin Subscription Plans Settings
+            </h2>
+            <button 
+              type="button" 
+              onClick={handleAddPlan}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-leaf text-white text-xs font-bold rounded-lg hover:bg-leaf-hover active:scale-95 transition-all shadow-sm"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Plan
+            </button>
+          </div>
+          
+          <div className="space-y-6 pt-2">
             {(form.tiffinPlans || []).map((plan, index) => (
-              <div key={plan.id} className="border border-warm-200 p-4 rounded-xl space-y-3 bg-[#FFFDFB]">
-                <div className="flex items-center justify-between border-b border-warm-100 pb-2">
-                  <span className="font-bold text-espresso text-sm capitalize">{plan.name} Plan</span>
-                  <div className="flex items-center gap-3">
+              <div key={plan.id} className="border border-warm-200 p-4 rounded-xl space-y-3 bg-[#FFFDFB] relative">
+                
+                {/* Header (Name + Toggle + Delete) */}
+                <div className="flex flex-wrap items-center justify-between border-b border-warm-100 pb-2 gap-2">
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="text" 
+                      className="font-bold text-espresso text-sm bg-transparent border-b border-transparent hover:border-warm-300 focus:border-[#E65100] focus:outline-none py-0.5 px-1 rounded capitalize" 
+                      value={plan.name} 
+                      onChange={(e) => {
+                        const updated = [...form.tiffinPlans];
+                        updated[index] = { ...plan, name: e.target.value };
+                        setForm({ ...form, tiffinPlans: updated });
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center gap-4">
                     <label className="flex items-center gap-1.5 cursor-pointer">
                       <input 
                         type="checkbox" 
@@ -184,10 +236,57 @@ export default function AdminSettingsPage() {
                       />
                       <span className="text-xs font-semibold text-espresso">Available</span>
                     </label>
-                    <span className="text-xs bg-saffron-100 text-saffron-900 px-2 py-0.5 rounded font-medium uppercase">{plan.planType}</span>
+                    <button 
+                      type="button" 
+                      onClick={() => handleDeletePlan(index)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors"
+                      title="Delete Plan"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                {/* Grid of Inputs */}
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label className="input-label">Plan Type</label>
+                    <select 
+                      className="input py-2" 
+                      value={plan.planType} 
+                      onChange={(e) => {
+                        const val = e.target.value as 'weekly' | 'monthly';
+                        const updated = [...form.tiffinPlans];
+                        updated[index] = { 
+                          ...plan, 
+                          planType: val, 
+                          numberOfDays: val === 'weekly' ? 7 : 30 
+                        };
+                        setForm({ ...form, tiffinPlans: updated });
+                      }}
+                    >
+                      <option value="weekly">Weekly (7 Days)</option>
+                      <option value="monthly">Monthly (30 Days)</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="input-label">Meal Type</label>
+                    <select 
+                      className="input py-2" 
+                      value={plan.mealType} 
+                      onChange={(e) => {
+                        const updated = [...form.tiffinPlans];
+                        updated[index] = { ...plan, mealType: e.target.value as any };
+                        setForm({ ...form, tiffinPlans: updated });
+                      }}
+                    >
+                      <option value="lunch">Lunch</option>
+                      <option value="dinner">Dinner</option>
+                      <option value="both">Both (Lunch & Dinner)</option>
+                    </select>
+                  </div>
+
                   <div>
                     <label className="input-label">Price (₹)</label>
                     <input 
@@ -202,20 +301,7 @@ export default function AdminSettingsPage() {
                       }} 
                     />
                   </div>
-                  <div>
-                    <label className="input-label">Number of Days</label>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      className="input" 
-                      value={plan.numberOfDays || 0} 
-                      onChange={(e) => {
-                        const updated = [...form.tiffinPlans];
-                        updated[index] = { ...plan, numberOfDays: Number(e.target.value) };
-                        setForm({ ...form, tiffinPlans: updated });
-                      }} 
-                    />
-                  </div>
+
                   <div>
                     <label className="input-label">Delivery Time</label>
                     <input 
@@ -230,6 +316,7 @@ export default function AdminSettingsPage() {
                     />
                   </div>
                 </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="input-label">Description</label>
