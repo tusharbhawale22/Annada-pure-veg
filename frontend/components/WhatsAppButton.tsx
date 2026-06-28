@@ -13,6 +13,9 @@ export default function WhatsAppButton() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
+  // ALWAYS call hooks at the top level
+  const { data: settingsData } = useQuery('store-settings', () => settingsApi.get().then(r => r.data));
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -24,7 +27,6 @@ export default function WhatsAppButton() {
     return null;
   }
 
-  const { data: settingsData } = useQuery('store-settings', () => settingsApi.get().then(r => r.data));
   const whatsappNumber = settingsData?.settings?.whatsappNumber || '919763216146';
 
   return (

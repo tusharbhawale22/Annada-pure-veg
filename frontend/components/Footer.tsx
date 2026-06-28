@@ -113,7 +113,7 @@ export default function Footer() {
             <div className="mt-5">
               <p className="text-xs font-semibold text-warm-400 uppercase tracking-wider mb-2">Delivery Areas</p>
               <div className="flex flex-wrap gap-1.5">
-                {(settings.deliveryAreas || ['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri']).map((area: string) => (
+                {(Array.isArray(settings.deliveryAreas) ? settings.deliveryAreas : ['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri']).map((area: string) => (
                   <span key={area} className="text-xs bg-white/10 text-warm-300 px-2 py-1 rounded-lg border border-white/10">
                     {area}
                   </span>

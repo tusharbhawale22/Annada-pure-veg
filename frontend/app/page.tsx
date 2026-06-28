@@ -392,7 +392,7 @@ export default async function HomePage() {
                   <Truck className="w-4 h-4" /> Delivery Areas
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {settings.deliveryAreas.map((area: string) => (
+                  {(Array.isArray(settings.deliveryAreas) ? settings.deliveryAreas : ['Kharadi', 'Viman Nagar', 'Sainath Nagar', 'Wadgaon Sheri']).map((area: string) => (
                     <span key={area} className="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-saffron-100 text-xs font-semibold text-espresso">
                       {area}
                     </span>
