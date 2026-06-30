@@ -4,7 +4,7 @@ import { useQuery } from 'react-query';
 import { customerApi } from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useState } from 'react';
-import { Search, Users, X, Package, Clock, IndianRupee } from 'lucide-react';
+import { Search, Users, X, Package, Clock } from 'lucide-react';
 
 export default function AdminCustomersPage() {
   const [search, setSearch] = useState('');
@@ -180,7 +180,7 @@ export default function AdminCustomersPage() {
                               <ul className="space-y-1">
                                 {order.items.map((item: any, idx: number) => (
                                   <li key={idx} className="flex justify-between text-gray-600">
-                                    <span>{item.quantity}x {item.menuItem?.name || 'Unknown Item'}</span>
+                                    <span>{item.quantity}x {item.name || 'Unknown Item'}</span>
                                     <span>{formatCurrency(item.price * item.quantity)}</span>
                                   </li>
                                 ))}
