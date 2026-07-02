@@ -56,6 +56,11 @@ const sendEmail = async (options) => {
   }
 
   // Fallback to Ethereal Sandbox if SMTP is disabled, uses placeholders, or failed to send
+  if (process.env.NODE_ENV === 'production') {
+    console.warn('⚠️ SMTP not configured in production. Skipping admin notification email.');
+    return null;
+  }
+  
   isSandbox = true;
   const testAccount = await nodemailer.createTestAccount();
   transporter = nodemailer.createTransport({
