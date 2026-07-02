@@ -56,42 +56,8 @@ const sendEmail = async (options) => {
   }
 
   // Fallback to Ethereal Sandbox if SMTP is disabled, uses placeholders, or failed to send
-  if (process.env.NODE_ENV === 'production') {
-    console.warn('⚠️ SMTP not configured in production. Skipping admin notification email.');
-    return null;
-  }
-  
-  isSandbox = true;
-  const testAccount = await nodemailer.createTestAccount();
-  transporter = nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
-    secure: false,
-    auth: {
-      user: testAccount.user,
-      pass: testAccount.pass,
-    },
-  });
-
-  const mailOptions = {
-    from: '"Annada Pure Veg (Sandbox)" <noreply@ethereal.email>',
-    to: options.email,
-    subject: options.subject,
-    text: options.text,
-    html: options.html,
-  };
-
-  const info = await transporter.sendMail(mailOptions);
-  const previewUrl = nodemailer.getTestMessageUrl(info);
-
-  console.log('\n========================================');
-  console.log('✉️  SANDBOX EMAIL DELIVERED (ETHEREAL)');
-  console.log(`To:          ${options.email}`);
-  console.log(`Subject:     ${options.subject}`);
-  console.log(`Preview URL: ${previewUrl}`);
-  console.log('========================================\n');
-
-  return previewUrl;
+  console.warn('⚠️ SMTP not configured. Skipping admin notification email.');
+  return null;
 };
 
 module.exports = sendEmail;
