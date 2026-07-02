@@ -116,7 +116,9 @@ router.post('/verify', protect, async (req, res, next) => {
         if (emails.length > 0) {
           const emailSubject = `💰 New Paid Order Received! (#${existingOrder._id.toString().slice(-6)})`;
           const emailText = `Hello Admin,\n\nA new order has been placed and PAID ONLINE by ${userDetails ? userDetails.name : 'a customer'}.\nTotal Amount: ₹${existingOrder.totalAmount}\nPayment Method: Razorpay\n\nPlease check the admin dashboard for details.`;
-          await Promise.all(emails.map(email => sendEmail({ email, subject: emailSubject, text: emailText })));
+          // Fire and forget to avoid blocking API response
+          Promise.all(emails.map(email => sendEmail({ email, subject: emailSubject, text: emailText })))
+            .catch(err => console.error('Background email error:', err));
         }
       } catch (emailErr) {
         console.error('Failed to send admin notification email:', emailErr);

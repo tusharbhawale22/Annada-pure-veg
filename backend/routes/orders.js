@@ -142,7 +142,9 @@ router.post('/', protect, orderLimiter, validateOrder, async (req, res, next) =>
         if (emails.length > 0) {
           const emailSubject = `🔔 New COD Order Received! (#${order._id.toString().slice(-6)})`;
           const emailText = `Hello Admin,\n\nA new Cash on Delivery order has been placed by ${req.user.name}.\nTotal Amount: ₹${totalAmount}\nOrder Type: ${orderType}\n\nPlease check the admin dashboard for details.`;
-          await Promise.all(emails.map(email => sendEmail({ email, subject: emailSubject, text: emailText })));
+          // Fire and forget to avoid blocking API response
+          Promise.all(emails.map(email => sendEmail({ email, subject: emailSubject, text: emailText })))
+            .catch(err => console.error('Background email error:', err));
         }
       } catch (emailErr) {
         console.error('Failed to send admin notification email:', emailErr);
