@@ -155,7 +155,7 @@ export default function AdminCustomersPage() {
                           <div key={order._id} className="border border-gray-100 rounded-xl p-4 hover:border-gray-200 transition-colors">
                             <div className="flex justify-between items-start mb-3">
                               <div>
-                                <p className="font-semibold text-espresso">Order #{order._id.slice(-6).toUpperCase()}</p>
+                                <p className="font-semibold text-espresso">Order #{order.orderNumber || order._id.slice(-6).toUpperCase()}</p>
                                 <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                                   <Clock className="w-3 h-3" />
                                   {formatDate(order.createdAt)}
