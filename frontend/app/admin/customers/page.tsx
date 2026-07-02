@@ -4,7 +4,7 @@ import { useQuery } from 'react-query';
 import { customerApi } from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useState } from 'react';
-import { Search, Users, X, Package, Clock } from 'lucide-react';
+import { Search, Users, X, Package, Clock, MapPin } from 'lucide-react';
 
 export default function AdminCustomersPage() {
   const [search, setSearch] = useState('');
@@ -141,6 +141,30 @@ export default function AdminCustomersPage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Saved Addresses */}
+                  {customerDetail.customer.addresses && customerDetail.customer.addresses.length > 0 && (
+                    <div>
+                      <h3 className="font-bold text-lg text-espresso flex items-center gap-2 mb-4">
+                        <MapPin className="w-5 h-5 text-saffron-500" />
+                        Saved Addresses
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {customerDetail.customer.addresses.map((addr: any, idx: number) => (
+                          <div key={idx} className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+                            <p className="font-semibold text-sm text-espresso mb-1">
+                              {addr.label || 'Address'}
+                            </p>
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                              {addr.line1}<br />
+                              {addr.area}, {addr.pincode}
+                              {addr.landmark && <><br />Landmark: {addr.landmark}</>}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Order History */}
                   <div>
