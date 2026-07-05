@@ -36,7 +36,7 @@ export default function Footer() {
     <footer className="bg-espresso text-warm-200">
       {/* Top section */}
       <div className="container-custom py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
           {/* Brand */}
           <div className="lg:col-span-1">
@@ -59,36 +59,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick links */}
-          <div>
-            <h3 className="font-display font-semibold text-white text-base mb-4">Quick Links</h3>
-            <ul className="space-y-2.5">
-              {quickLinks.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-warm-300 hover:text-gold-400 transition-colors flex items-center gap-2">
-                    <span className="w-1 h-1 bg-saffron-900 rounded-full" />
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
 
-          {/* Menu categories */}
-          <div>
-            <h3 className="font-display font-semibold text-white text-base mb-4">On the Menu</h3>
-            <ul className="space-y-2.5">
-              {categories.map((cat) => (
-                <li key={cat}>
-                  <Link href={`/menu?category=${encodeURIComponent(cat)}`}
-                    className="text-sm text-warm-300 hover:text-gold-400 transition-colors flex items-center gap-2">
-                    <span className="w-1 h-1 bg-gold-800 rounded-full" />
-                    {cat}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
 
           {/* Contact & Location */}
           <div>

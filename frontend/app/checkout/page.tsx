@@ -485,32 +485,8 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              {/* Coupon */}
-              <div className="border-t border-warm-200 pt-4 mb-4">
-                <label className="input-label flex items-center gap-1"><Tag className="w-3.5 h-3.5" /> Coupon Code</label>
-                <div className="flex gap-2 mt-1">
-                  <input className="input flex-1 py-2.5" placeholder="WELCOME10" value={couponCode}
-                    onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponData(null); }}
-                    disabled={!!couponData} />
-                  {couponData ? (
-                    <button onClick={() => { setCouponData(null); setCouponCode(''); }} className="px-3 rounded-xl border-2 border-warm-200 hover:border-red-300 text-red-500">
-                      <X className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <button onClick={handleApplyCoupon} disabled={couponLoading || !couponCode.trim()} className="px-4 py-2.5 bg-espresso text-white text-sm font-bold rounded-xl hover:bg-espresso/90 disabled:opacity-50 transition-all">
-                      {couponLoading ? '...' : 'Apply'}
-                    </button>
-                  )}
-                </div>
-                {couponData && (
-                  <p className="text-xs text-leaf font-semibold mt-1.5 flex items-center gap-1">
-                    <Check className="w-3 h-3" /> {couponData.message}
-                  </p>
-                )}
-              </div>
-
               {/* Price breakdown */}
-              <div className="space-y-2 text-sm">
+              <div className="border-t border-warm-200 pt-4 space-y-2 text-sm">
                 <div className="flex justify-between text-espresso/70"><span>Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
                 {discount > 0 && <div className="flex justify-between text-leaf"><span>Coupon Discount</span><span>-{formatCurrency(discount)}</span></div>}
                 <div className="flex justify-between text-espresso/70">

@@ -116,7 +116,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             
             {/* Search Bar */}
-            {pathname !== '/' && pathname !== '/tiffin' && pathname !== '/checkout' && !pathname?.startsWith('/profile') && (
+            {pathname !== '/' && pathname !== '/tiffin' && pathname !== '/checkout' && !pathname?.startsWith('/profile') && !pathname?.startsWith('/order-confirmation') && (
               <form onSubmit={handleSearch} className="hidden lg:flex items-center relative">
                 <input 
                   type="text" 
