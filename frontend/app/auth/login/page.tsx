@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { Eye, EyeOff, Leaf, ArrowRight } from 'lucide-react';
@@ -17,10 +17,14 @@ const loginSchema = z.object({
 });
 type LoginForm = z.infer<typeof loginSchema>;
 
-function LoginContent() {
+export default function LoginPage() {
   const router  = useRouter();
-  const params  = useSearchParams();
-  const redirect = params.get('redirect') || '/';
+  const [redirect, setRedirect] = useState('/');
+  
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    setRedirect(searchParams.get('redirect') || '/');
+  }, []);
   const { setUser } = useAuthStore();
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -123,17 +127,5 @@ function LoginContent() {
         </p>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-b from-[#C84B00] to-[#E65100] flex items-center justify-center text-white font-semibold">
-        Loading...
-      </div>
-    }>
-      <LoginContent />
-    </Suspense>
   );
 }

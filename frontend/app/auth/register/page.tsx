@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { Eye, EyeOff, Leaf, Check, MapPin } from 'lucide-react';
@@ -45,10 +45,14 @@ const registerSchema = z.object({
 });
 type RegisterForm = z.infer<typeof registerSchema>;
 
-function RegisterContent() {
+export default function RegisterPage() {
   const router  = useRouter();
-  const params  = useSearchParams();
-  const redirect = params.get('redirect') || '/';
+  const [redirect, setRedirect] = useState('/');
+  
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    setRedirect(searchParams.get('redirect') || '/');
+  }, []);
   const { setUser } = useAuthStore();
   const [showPw, setShowPw]   = useState(false);
   const [loading, setLoading] = useState(false);
@@ -255,17 +259,5 @@ function RegisterContent() {
         </form>
       </div>
     </div>
-  );
-}
-
-export default function RegisterPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-b from-[#C84B00] to-[#E65100] flex items-center justify-center text-white font-semibold">
-        Loading...
-      </div>
-    }>
-      <RegisterContent />
-    </Suspense>
   );
 }
