@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
-import { orderApi, couponApi, paymentApi, authApi, settingsApi } from '@/lib/api';
+import { orderApi, paymentApi, authApi, settingsApi } from '@/lib/api';
 import { useQuery } from 'react-query';
 import { formatCurrency } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { Tag, Truck, Store, CreditCard, Banknote, Check, X, MapPin, Plus, ChevronDown } from 'lucide-react';
+import { Truck, Store, CreditCard, Banknote, MapPin, Plus, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 
 declare global {
@@ -33,9 +33,7 @@ export default function CheckoutPage() {
 
   const [orderType,  setOrderType]  = useState<'delivery' | 'pickup'>('delivery');
   const [payMethod,  setPayMethod]  = useState<'razorpay' | 'cod'>('razorpay');
-  const [couponCode, setCouponCode] = useState('');
-  const [couponData, setCouponData] = useState<{ discount: number; message: string } | null>(null);
-  const [couponLoading, setCouponLoading] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [rzpOpen, setRzpOpen] = useState(false); // true while Razorpay modal is open
   const [notes,   setNotes]   = useState('');
@@ -100,7 +98,7 @@ export default function CheckoutPage() {
       ? 0
       : defaultDeliveryFee;
 
-  const discount    = couponData?.discount ?? 0;
+  const discount    = 0;
   const taxAmount   = Math.round(((subtotal - discount + deliveryFee) * (settings?.taxRate ?? 5)) / 100);
   const total       = subtotal - discount + deliveryFee + taxAmount;
   const isStoreClosed = settings?.isOpen === false;
@@ -130,20 +128,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
-    setCouponLoading(true);
-    try {
-      const res = await couponApi.validate(couponCode, subtotal);
-      setCouponData({ discount: res.data.discount, message: res.data.message });
-      toast.success(res.data.message);
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Invalid coupon');
-      setCouponData(null);
-    } finally {
-      setCouponLoading(false);
-    }
-  };
+
 
   const handlePlaceOrder = async () => {
     if (isStoreClosed) {
@@ -177,7 +162,7 @@ export default function CheckoutPage() {
         orderType,
         paymentMethod: payMethod,
         deliveryAddress: orderType === 'delivery' ? activeAddress : undefined,
-        couponCode: couponData ? couponCode : undefined,
+
         notes,
       };
 
