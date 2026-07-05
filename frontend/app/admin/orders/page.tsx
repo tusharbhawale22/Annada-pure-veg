@@ -734,9 +734,9 @@ export default function AdminOrdersPage() {
               {/* Left Column: Menu Items Selection */}
               <div className="md:flex-1 flex flex-col mb-6 md:mb-0">
                 <label className="block font-bold text-espresso/70 mb-2">Select Menu Item</label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <select
-                    className="input py-2 px-3 text-sm select-appearance bg-white border border-warm-300 rounded-xl flex-1 cursor-pointer focus:outline-none"
+                    className="input py-2.5 px-3 text-sm select-appearance bg-white border border-warm-300 rounded-xl flex-1 cursor-pointer focus:outline-none min-w-0"
                     value={offlineSelectedMenuItem}
                     onChange={(e) => setOfflineSelectedMenuItem(e.target.value)}
                   >
@@ -754,9 +754,9 @@ export default function AdminOrdersPage() {
                       if (item) handleAddToOfflineCart(item);
                     }}
                     disabled={!offlineSelectedMenuItem}
-                    className="px-4 py-2 bg-saffron-900 hover:bg-saffron-950 text-white rounded-xl font-bold transition-all disabled:opacity-50 text-sm flex items-center justify-center shadow-sm"
+                    className="px-6 py-2.5 bg-saffron-900 hover:bg-saffron-950 text-white rounded-xl font-bold transition-all disabled:opacity-50 text-sm flex items-center justify-center shadow-sm shrink-0"
                   >
-                    Add
+                    Add Item
                   </button>
                 </div>
               </div>
