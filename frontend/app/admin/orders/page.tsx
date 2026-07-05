@@ -734,7 +734,7 @@ export default function AdminOrdersPage() {
             <form onSubmit={handleCreateOfflineOrder} className="flex-1 flex flex-col md:flex-row gap-6 min-h-0 overflow-y-auto">
               
               {/* Left Column: Menu Items Search & Add */}
-              <div className="flex-1 flex flex-col min-h-0">
+              <div className="flex-none h-[400px] md:h-auto md:flex-1 flex flex-col md:min-h-0 mb-6 md:mb-0">
                 <div className="relative mb-3">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-espresso/40" />
                   <input
@@ -745,7 +745,7 @@ export default function AdminOrdersPage() {
                   />
                 </div>
 
-                <div className="min-h-[250px] md:min-h-0 flex-1 border border-warm-200 rounded-xl overflow-y-auto p-2 bg-ivory/30 space-y-1.5 max-h-[40vh] md:max-h-none">
+                <div className="flex-1 border border-warm-200 rounded-xl overflow-y-auto p-2 bg-ivory/30 space-y-1.5">
                   {filteredMenuItems.map((item: any) => (
                     <div key={item._id} className="bg-white p-3 rounded-lg border border-warm-200 flex items-center justify-between gap-3 shadow-sm hover:border-saffron-300 transition-all">
                       <div className="min-w-0">
