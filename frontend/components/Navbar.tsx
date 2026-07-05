@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { ShoppingCart, Menu, X, User, LogOut, ChevronDown, Leaf, Search } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, ChevronDown, Leaf } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 import { authApi } from '@/lib/api';
@@ -23,7 +23,6 @@ export default function Navbar() {
   const [scrolled,    setScrolled]    = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [cartBounce,  setCartBounce]  = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const totalItems = useCartStore((s) => s.getTotalItems());
   const toggleCart = useCartStore((s) => s.toggleCart);
@@ -54,14 +53,6 @@ export default function Navbar() {
       setUserMenuOpen(false);
       toast.success('Logged out. See you tomorrow! 🌿');
       router.push('/');
-    }
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/menu?search=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery('');
     }
   };
 
@@ -112,22 +103,7 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* ── Right Actions ────────────────────────────────── */}
           <div className="flex items-center gap-3">
-            
-            {/* Search Bar */}
-            {pathname !== '/' && pathname !== '/tiffin' && pathname !== '/checkout' && !pathname?.startsWith('/profile') && !pathname?.startsWith('/order-confirmation') && (
-              <form onSubmit={handleSearch} className="hidden lg:flex items-center relative">
-                <input 
-                  type="text" 
-                  placeholder="Search dishes..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-white/30 transition-all w-48"
-                />
-                <Search className="w-4 h-4 text-white/70 absolute left-3" />
-              </form>
-            )}
             <div className="hidden md:flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-1 gap-1">
               {/* Cart Button — only show when authenticated */}
               {isAuthenticated && (
