@@ -745,7 +745,7 @@ export default function AdminOrdersPage() {
                   />
                 </div>
 
-                <div className="flex-1 border border-warm-200 rounded-xl overflow-y-auto p-2 bg-ivory/30 space-y-1.5 max-h-[40vh] md:max-h-none">
+                <div className="min-h-[250px] md:min-h-0 flex-1 border border-warm-200 rounded-xl overflow-y-auto p-2 bg-ivory/30 space-y-1.5 max-h-[40vh] md:max-h-none">
                   {filteredMenuItems.map((item: any) => (
                     <div key={item._id} className="bg-white p-3 rounded-lg border border-warm-200 flex items-center justify-between gap-3 shadow-sm hover:border-saffron-300 transition-all">
                       <div className="min-w-0">
