@@ -734,7 +734,7 @@ export default function AdminOrdersPage() {
             <form onSubmit={handleCreateOfflineOrder} className="flex-1 flex flex-col md:flex-row gap-6 min-h-0 overflow-y-auto">
               
               {/* Left Column: Menu Items Search & Add */}
-              <div className="flex-none h-[400px] md:h-auto md:flex-1 flex flex-col md:min-h-0 mb-6 md:mb-0">
+              <div className="shrink-0 h-[300px] md:h-auto md:flex-1 flex flex-col md:min-h-0 mb-6 md:mb-0">
                 <div className="relative mb-3">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-espresso/40" />
                   <input
