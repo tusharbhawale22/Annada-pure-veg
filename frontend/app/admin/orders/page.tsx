@@ -29,7 +29,7 @@ export default function AdminOrdersPage() {
   const [offlinePaymentMethod, setOfflinePaymentMethod] = useState('cash');
   const [offlinePaymentStatus, setOfflinePaymentStatus] = useState('paid');
   const [offlineNotes, setOfflineNotes] = useState('');
-  const [offlineSearch, setOfflineSearch] = useState('');
+  const [offlineSelectedMenuItem, setOfflineSelectedMenuItem] = useState('');
   const [offlineDeliveryAddress, setOfflineDeliveryAddress] = useState({
     line1: '',
     area: 'Wadgaon Sheri',
@@ -214,9 +214,7 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const filteredMenuItems = menuItems.filter((item: any) =>
-    item.isAvailable && item.name.toLowerCase().includes(offlineSearch.toLowerCase())
-  );
+  const availableMenuItems = menuItems.filter((item: any) => item.isAvailable);
 
   return (
     <div className="p-4 md:p-8">
@@ -733,37 +731,33 @@ export default function AdminOrdersPage() {
 
             <form onSubmit={handleCreateOfflineOrder} className="flex-1 flex flex-col md:flex-row gap-6 min-h-0 overflow-y-auto">
               
-              {/* Left Column: Menu Items Search & Add */}
-              <div className="shrink-0 h-[300px] md:h-auto md:flex-1 flex flex-col md:min-h-0 mb-6 md:mb-0">
-                <div className="relative mb-3">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-espresso/40" />
-                  <input
-                    className="input pl-9 py-2 text-sm"
-                    placeholder="Search menu items..."
-                    value={offlineSearch}
-                    onChange={(e) => setOfflineSearch(e.target.value)}
-                  />
-                </div>
-
-                <div className="flex-1 border border-warm-200 rounded-xl overflow-y-auto p-2 bg-ivory/30 space-y-1.5">
-                  {filteredMenuItems.map((item: any) => (
-                    <div key={item._id} className="bg-white p-3 rounded-lg border border-warm-200 flex items-center justify-between gap-3 shadow-sm hover:border-saffron-300 transition-all">
-                      <div className="min-w-0">
-                        <p className="font-bold text-espresso text-sm">{item.name}</p>
-                        <p className="text-xs text-saffron-900 font-semibold">{formatCurrency(item.price)}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleAddToOfflineCart(item)}
-                        className="px-2.5 py-1 bg-warm-100 hover:bg-saffron-100 hover:text-saffron-900 text-espresso text-xs font-bold rounded-lg border border-warm-300 transition-all"
-                      >
-                        Add
-                      </button>
-                    </div>
-                  ))}
-                  {filteredMenuItems.length === 0 && (
-                    <p className="text-xs text-center text-espresso/50 py-8">No available menu items found.</p>
-                  )}
+              {/* Left Column: Menu Items Selection */}
+              <div className="md:flex-1 flex flex-col mb-6 md:mb-0">
+                <label className="block font-bold text-espresso/70 mb-2">Select Menu Item</label>
+                <div className="flex gap-2">
+                  <select
+                    className="input py-2 px-3 text-sm select-appearance bg-white border border-warm-300 rounded-xl flex-1 cursor-pointer focus:outline-none"
+                    value={offlineSelectedMenuItem}
+                    onChange={(e) => setOfflineSelectedMenuItem(e.target.value)}
+                  >
+                    <option value="" disabled>Choose an item...</option>
+                    {availableMenuItems.map((item: any) => (
+                      <option key={item._id} value={item._id}>
+                        {item.name} - {formatCurrency(item.price)}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const item = availableMenuItems.find((i: any) => i._id === offlineSelectedMenuItem);
+                      if (item) handleAddToOfflineCart(item);
+                    }}
+                    disabled={!offlineSelectedMenuItem}
+                    className="px-4 py-2 bg-saffron-900 hover:bg-saffron-950 text-white rounded-xl font-bold transition-all disabled:opacity-50 text-sm flex items-center justify-center shadow-sm"
+                  >
+                    Add
+                  </button>
                 </div>
               </div>
 
