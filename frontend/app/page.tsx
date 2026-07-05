@@ -5,6 +5,8 @@ import SpiceParticles from '@/components/SpiceParticles';
 import HeroFoodCards from '@/components/HeroFoodCards';
 import Image from 'next/image';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Annada Pure Veg — Fresh Homestyle Breakfast & Tiffin in Pune',
   description: 'Order fresh pure vegetarian breakfast and tiffin delivered warm to your door. Wadgaon Sheri, Pune. No preservatives. Just honest food.',
